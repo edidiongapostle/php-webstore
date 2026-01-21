@@ -1,0 +1,30 @@
+<?php
+// Database configuration
+define('DB_PATH', __DIR__ . '/database/webstore.db');
+
+// Create database connection
+try {
+    $conn = new PDO('sqlite:' . DB_PATH);
+    $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+    $conn->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
+} catch(PDOException $e) {
+    die("Connection failed: " . $e->getMessage());
+}
+
+// Start session
+if (session_status() == PHP_SESSION_NONE) {
+    session_start();
+}
+
+// Application settings
+define('SITE_NAME', 'WebStore');
+define('SITE_EMAIL', 'admin@webstore.com');
+define('CURRENCY', 'USD');
+
+// Error reporting
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
+
+// Set timezone
+date_default_timezone_set('UTC');
+?>

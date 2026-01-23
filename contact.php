@@ -2,8 +2,19 @@
 require_once 'config.php';
 require_once 'functions.php';
 
+// Check maintenance mode
+$maintenance_mode = getSetting('maintenance_mode', '0');
+if ($maintenance_mode === '1' && !isset($_SESSION['admin_logged_in'])) {
+    http_response_code(503);
+    include 'maintenance.php';
+    exit;
+}
+
 $errors = [];
 $success = false;
+$site_name = getSetting('site_name', 'WebStore');
+$site_email = getSetting('site_email', 'admin@webstore.com');
+$pageTitle = "Contact - " . $site_name;
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Validate form data
@@ -70,7 +81,7 @@ $pageTitle = "Contact Us - WebStore";
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between h-16">
                 <div class="flex items-center">
-                    <h1 class="text-2xl font-bold text-indigo-600">WebStore</h1>
+                    <h1 class="text-2xl font-bold text-indigo-600"><?php echo htmlspecialchars($site_name); ?></h1>
                 </div>
                 <div class="flex items-center space-x-4">
                     <a href="index.php" class="text-gray-700 hover:text-indigo-600 px-3 py-2 rounded-md text-sm font-medium">Home</a>
@@ -111,7 +122,7 @@ $pageTitle = "Contact Us - WebStore";
                             </div>
                             <div class="ml-4">
                                 <h4 class="text-lg font-medium text-gray-900">Email</h4>
-                                <p class="text-gray-600">support@webstore.com</p>
+                                <p class="text-gray-600"><?php echo htmlspecialchars($site_email); ?></p>
                                 <p class="text-sm text-gray-500 mt-1">We respond within 24 hours</p>
                             </div>
                         </div>
@@ -252,7 +263,7 @@ $pageTitle = "Contact Us - WebStore";
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
                 <div>
-                    <h3 class="text-lg font-semibold mb-4">WebStore</h3>
+                    <h3 class="text-lg font-semibold mb-4"><?php echo htmlspecialchars($site_name); ?></h3>
                     <p class="text-gray-400">Premium websites for your business needs</p>
                 </div>
                 <div>
@@ -272,7 +283,7 @@ $pageTitle = "Contact Us - WebStore";
                 </div>
             </div>
             <div class="mt-8 pt-8 border-t border-gray-700 text-center">
-                <p>&copy; <?php echo date('Y'); ?> WebStore. All rights reserved.</p>
+                <p>&copy; <?php echo date('Y'); ?> <?php echo htmlspecialchars($site_name); ?>. All rights reserved.</p>
             </div>
         </div>
     </footer>

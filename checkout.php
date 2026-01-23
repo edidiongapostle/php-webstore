@@ -3,8 +3,20 @@ session_start();
 require_once 'config.php';
 require_once 'functions.php';
 
+// Check maintenance mode
+$maintenance_mode = getSetting('maintenance_mode', '0');
+if ($maintenance_mode === '1' && !isset($_SESSION['admin_logged_in'])) {
+    http_response_code(503);
+    include 'maintenance.php';
+    exit;
+}
+
 $cart_items = getCartItems();
 $cart_total = getCartTotal();
+$site_name = getSetting('site_name', 'WebStore');
+$anonymous_checkout_enabled = getSetting('anonymous_checkout', '1');
+$crypto_payments_enabled = getSetting('crypto_payments', '1');
+$pageTitle = "Checkout - " . $site_name;
 
 // Redirect if cart is empty
 if (empty($cart_items)) {
@@ -16,25 +28,8 @@ $errors = [];
 $success = false;
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    // Validate form data
-    $anonymous_checkout = isset($_POST['anonymous_checkout']) ? 1 : 0;
-    $name = sanitizeInput($_POST['name'] ?? '');
-    $email = sanitizeInput($_POST['email'] ?? '');
-    $phone = sanitizeInput($_POST['phone'] ?? '');
+    // Basic validation - payment details will be validated in payment.php
     $payment_method = sanitizeInput($_POST['payment_method'] ?? '');
-    
-    // Validation - skip name/email validation for anonymous checkout
-    if (!$anonymous_checkout) {
-        if (empty($name)) {
-            $errors['name'] = 'Name is required';
-        }
-        
-        if (empty($email)) {
-            $errors['email'] = 'Email is required';
-        } elseif (!validateEmail($email)) {
-            $errors['email'] = 'Invalid email format';
-        }
-    }
     
     if (empty($payment_method)) {
         $errors['payment_method'] = 'Payment method is required';
@@ -45,29 +40,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $errors['accept_terms'] = 'You must accept the Terms of Use to complete your purchase';
     }
     
+    // If no errors, redirect to payment page
     if (empty($errors)) {
-        try {
-            $customer_data = [
-                'name' => $anonymous_checkout ? 'Anonymous Customer' : $name,
-                'email' => $anonymous_checkout ? 'anonymous@webstore.com' : $email,
-                'phone' => $phone,
-                'total' => $cart_total
-            ];
-            
-            $order_id = createOrder($customer_data, $cart_items);
-            
-            if ($order_id) {
-                clearCart();
-                $_SESSION['order_success'] = true;
-                $_SESSION['order_id'] = $order_id;
-                header('Location: order_success.php');
-                exit;
-            } else {
-                $errors['general'] = 'Failed to create order. Please try again.';
-            }
-        } catch (Exception $e) {
-            $errors['general'] = 'An error occurred. Please try again.';
-        }
+        // Store form data in session for payment.php
+        $_SESSION['checkout_data'] = $_POST;
+        header('Location: payment.php');
+        exit;
     }
 }
 
@@ -107,7 +85,7 @@ $pageTitle = "Checkout - WebStore";
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between h-16">
                 <div class="flex items-center">
-                    <h1 class="text-2xl font-bold text-indigo-600">WebStore</h1>
+                    <h1 class="text-2xl font-bold text-indigo-600"><?php echo htmlspecialchars($site_name); ?></h1>
                 </div>
                 <div class="flex items-center space-x-4">
                     <a href="index.php" class="text-gray-700 hover:text-indigo-600 px-3 py-2 rounded-md text-sm font-medium">Home</a>
@@ -132,12 +110,13 @@ $pageTitle = "Checkout - WebStore";
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <!-- Checkout Form -->
             <div class="lg:col-span-2">
-                <form method="POST" class="space-y-6">
+                <form method="POST" action="payment.php" class="space-y-6">
                     <!-- Billing Information -->
                     <div class="bg-white rounded-lg shadow-lg p-6">
                         <h3 class="text-xl font-semibold mb-4">Billing Information</h3>
                         
                         <!-- Anonymous Checkout Option -->
+                        <?php if ($anonymous_checkout_enabled === '1'): ?>
                         <div class="mb-6">
                             <label class="flex items-center">
                                 <input type="checkbox" name="anonymous_checkout" value="1" class="mr-2 h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
@@ -146,6 +125,7 @@ $pageTitle = "Checkout - WebStore";
                             </label>
                             <p class="text-sm text-gray-500 mt-1">Check this to skip personal information fields</p>
                         </div>
+                        <?php endif; ?>
                         
                         <div id="billing-fields">
                         <?php if (isset($errors['general'])): ?>
@@ -187,33 +167,69 @@ $pageTitle = "Checkout - WebStore";
                         <h3 class="text-xl font-semibold mb-4">Payment Method</h3>
                         
                         <div class="space-y-3">
-                            <label class="flex items-center p-3 border rounded-lg cursor-pointer hover:bg-gray-50">
-                                <input type="radio" name="payment_method" value="credit_card" class="mr-3" 
-                                       <?php echo (($_POST['payment_method'] ?? '') === 'credit_card') ? 'checked' : ''; ?>>
-                                <i class="fas fa-credit-card mr-2 text-indigo-600"></i>
-                                <span>Credit/Debit Card</span>
-                            </label>
-                            
-                            <label class="flex items-center p-3 border rounded-lg cursor-pointer hover:bg-gray-50">
-                                <input type="radio" name="payment_method" value="paypal" class="mr-3"
-                                       <?php echo (($_POST['payment_method'] ?? '') === 'paypal') ? 'checked' : ''; ?>>
-                                <i class="fab fa-paypal mr-2 text-blue-600"></i>
-                                <span>PayPal</span>
-                            </label>
-                            
-                            <label class="flex items-center p-3 border rounded-lg cursor-pointer hover:bg-gray-50">
-                                <input type="radio" name="payment_method" value="bank_transfer" class="mr-3"
-                                       <?php echo (($_POST['payment_method'] ?? '') === 'bank_transfer') ? 'checked' : ''; ?>>
-                                <i class="fas fa-university mr-2 text-green-600"></i>
-                                <span>Bank Transfer</span>
-                            </label>
-                            
-                            <label class="flex items-center p-3 border rounded-lg cursor-pointer hover:bg-gray-50">
-                                <input type="radio" name="payment_method" value="crypto" class="mr-3"
-                                       <?php echo (($_POST['payment_method'] ?? '') === 'crypto') ? 'checked' : ''; ?>>
-                                <i class="fab fa-bitcoin mr-2 text-orange-600"></i>
-                                <span>Cryptocurrency</span>
-                            </label>
+                            <?php 
+                            $payment_methods = getPaymentMethods();
+                            foreach ($payment_methods as $payment):
+                                // Skip crypto payments if disabled
+                                if ($payment['type'] === 'crypto' && $crypto_payments_enabled !== '1') {
+                                    continue;
+                                }
+                                $config = json_decode($payment['config_data'], true) ?: [];
+                            ?>
+                                <label class="flex items-center p-3 border rounded-lg cursor-pointer hover:bg-gray-50">
+                                    <input type="radio" name="payment_method" value="<?php echo $payment['type']; ?>" class="mr-3"
+                                           <?php echo (($_POST['payment_method'] ?? '') === $payment['type'] ? 'checked' : ''); ?>
+                                    <i class="<?php echo $payment['icon']; ?> mr-2 text-indigo-600"></i>
+                                    <div class="flex-1">
+                                        <span class="font-medium"><?php echo htmlspecialchars($payment['name']); ?></span>
+                                        <?php if ($payment['type'] === 'crypto' && !empty($config)): ?>
+                                            <div class="text-xs text-gray-500 mt-1">
+                                                <?php 
+                                                $enabled_coins = $config['enabled_coins'] ?? [];
+                                                $coins = [];
+                                                
+                                                if (!empty($config['btc_address']) && in_array('BTC', $enabled_coins)) {
+                                                    $coins[] = 'BTC';
+                                                }
+                                                if (!empty($config['eth_address']) && in_array('ETH', $enabled_coins)) {
+                                                    $coins[] = 'ETH';
+                                                }
+                                                if (!empty($config['ltc_address']) && in_array('LTC', $enabled_coins)) {
+                                                    $coins[] = 'LTC';
+                                                }
+                                                
+                                                if (!empty($coins)) {
+                                                    echo 'Available: ' . implode(', ', $coins);
+                                                } else {
+                                                    echo 'No coins enabled';
+                                                }
+                                                ?>
+                                            </div>
+                                        <?php endif; ?>
+                                        <?php if ($payment['type'] === 'credit_card' && !empty($config['processor'])): ?>
+                                            <div class="text-xs text-gray-500 mt-1">
+                                                Processed via <?php echo htmlspecialchars($config['processor']); ?>
+                                                <?php if (!empty($config['sandbox']) && $config['sandbox'] == '1'): ?>
+                                                    <span class="text-orange-600">(Sandbox)</span>
+                                                <?php endif; ?>
+                                            </div>
+                                        <?php endif; ?>
+                                        <?php if ($payment['type'] === 'paypal' && !empty($config['processor'])): ?>
+                                            <div class="text-xs text-gray-500 mt-1">
+                                                Processed via <?php echo htmlspecialchars($config['processor']); ?>
+                                                <?php if (!empty($config['sandbox']) && $config['sandbox'] == '1'): ?>
+                                                    <span class="text-orange-600">(Sandbox)</span>
+                                                <?php endif; ?>
+                                            </div>
+                                        <?php endif; ?>
+                                        <?php if ($payment['type'] === 'bank_transfer' && !empty($config['bank_name'])): ?>
+                                            <div class="text-xs text-gray-500 mt-1">
+                                                Transfer to <?php echo htmlspecialchars($config['bank_name']); ?>
+                                            </div>
+                                        <?php endif; ?>
+                                    </div>
+                                </label>
+                            <?php endforeach; ?>
                         </div>
                         
                         <?php if (isset($errors['payment_method'])): ?>
@@ -262,8 +278,8 @@ $pageTitle = "Checkout - WebStore";
                     </div>
 
                     <button type="submit" class="w-full bg-indigo-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-indigo-700 transition">
-                        <i class="fas fa-lock mr-2"></i>
-                        Complete Purchase
+                        <i class="fas fa-arrow-right mr-2"></i>
+                        Continue to Payment
                     </button>
                 </form>
             </div>
@@ -319,7 +335,7 @@ $pageTitle = "Checkout - WebStore";
     <!-- Footer -->
     <footer class="bg-gray-800 text-white py-8">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-            <p>&copy; <?php echo date('Y'); ?> WebStore. All rights reserved.</p>
+            <p>&copy; <?php echo date('Y'); ?> <?php echo htmlspecialchars($site_name); ?>. All rights reserved.</p>
             <p class="mt-2 text-gray-400">Premium websites for your business needs</p>
         </div>
     </footer>

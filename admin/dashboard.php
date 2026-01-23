@@ -70,6 +70,10 @@ $recent_websites = $conn->query("SELECT * FROM websites ORDER BY created_at DESC
                     <i class="fas fa-plus mr-3"></i>
                     Add Website
                 </a>
+                <a href="settings.php" class="block px-4 py-3 text-gray-700 hover:bg-gray-50">
+                    <i class="fas fa-cog mr-3"></i>
+                    Settings
+                </a>
             </nav>
         </aside>
 

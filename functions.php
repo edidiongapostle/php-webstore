@@ -1,6 +1,44 @@
 <?php
 // Database helper functions
 
+function getSetting($key, $default = null) {
+    global $conn;
+    static $settings = null;
+    
+    if ($settings === null) {
+        $settings = [];
+        try {
+            $stmt = $conn->query("SELECT setting_key, setting_value FROM settings");
+            while ($row = $stmt->fetch()) {
+                $settings[$row['setting_key']] = $row['setting_value'];
+            }
+        } catch (Exception $e) {
+            // Return default values if database fails
+            return $default;
+        }
+    }
+    
+    return isset($settings[$key]) ? $settings[$key] : $default;
+}
+
+function getPaymentMethods() {
+    global $conn;
+    static $payment_methods = null;
+    
+    if ($payment_methods === null) {
+        $payment_methods = [];
+        try {
+            $stmt = $conn->query("SELECT * FROM payment_methods WHERE enabled = 1 ORDER BY sort_order");
+            $payment_methods = $stmt->fetchAll();
+        } catch (Exception $e) {
+            // Return empty array if database fails
+            return [];
+        }
+    }
+    
+    return $payment_methods;
+}
+
 function getAllWebsites() {
     global $conn;
     $sql = "SELECT * FROM websites WHERE status = 'active' ORDER BY featured DESC, created_at DESC";

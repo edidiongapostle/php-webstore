@@ -43,6 +43,58 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $featured = isset($_POST['featured']) ? 1 : 0;
     $status = sanitizeInput($_POST['status'] ?? 'active');
     
+    // Handle screenshot management
+    $existing_screenshots = json_decode($website['screenshots'] ?? '[]', true) ?: [];
+    
+    // Remove checked screenshots
+    if (isset($_POST['remove_screenshots']) && is_array($_POST['remove_screenshots'])) {
+        foreach ($_POST['remove_screenshots'] as $index) {
+            if (isset($existing_screenshots[$index])) {
+                // Delete file from server
+                $file_path = __DIR__ . '/../' . $existing_screenshots[$index];
+                if (file_exists($file_path)) {
+                    unlink($file_path);
+                }
+                unset($existing_screenshots[$index]);
+            }
+        }
+        // Re-index array
+        $existing_screenshots = array_values($existing_screenshots);
+    }
+    
+    // Handle new screenshot uploads
+    if (isset($_FILES['screenshots']) && is_array($_FILES['screenshots']['name'])) {
+        $upload_dir = __DIR__ . '/../uploads/screenshots/';
+        if (!file_exists($upload_dir)) {
+            mkdir($upload_dir, 0755, true);
+        }
+        
+        foreach ($_FILES['screenshots']['name'] as $key => $name) {
+            if (!empty($name) && $_FILES['screenshots']['error'][$key] == 0) {
+                $file = [
+                    'name' => $name,
+                    'type' => $_FILES['screenshots']['type'][$key],
+                    'tmp_name' => $_FILES['screenshots']['tmp_name'][$key],
+                    'error' => $_FILES['screenshots']['error'][$key],
+                    'size' => $_FILES['screenshots']['size'][$key]
+                ];
+                
+                if ($file['size'] <= 5 * 1024 * 1024) { // 5MB limit
+                    $extension = pathinfo($file['name'], PATHINFO_EXTENSION);
+                    if (in_array(strtolower($extension), ['png', 'jpg', 'jpeg', 'gif'])) {
+                        $filename = 'screenshot_' . time() . '_' . $key . '.' . $extension;
+                        $filepath = $upload_dir . $filename;
+                        if (move_uploaded_file($file['tmp_name'], $filepath)) {
+                            $existing_screenshots[] = 'uploads/screenshots/' . $filename;
+                        }
+                    }
+                }
+            }
+        }
+    }
+    
+    $screenshots_json = json_encode(array_values($existing_screenshots));
+    
     // Validation
     if (empty($title)) {
         $errors['title'] = 'Title is required';
@@ -73,12 +125,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $stmt = $conn->prepare("
                 UPDATE websites 
                 SET title = ?, description = ?, price = ?, category = ?, image_url = ?, 
-                    demo_url = ?, features = ?, technologies = ?, featured = ?, status = ?, updated_at = CURRENT_TIMESTAMP
+                    demo_url = ?, features = ?, technologies = ?, screenshots = ?, featured = ?, status = ?, updated_at = CURRENT_TIMESTAMP
                 WHERE id = ?
             ");
-            $stmt->execute([$title, $description, $price, $category, $image_url, $demo_url, $features, $technologies, $featured, $status, $website_id]);
+            $stmt->execute([$title, $description, $price, $category, $image_url, $demo_url, $features, $technologies, $screenshots_json, $featured, $status, $website_id]);
             
             $success = true;
+            
+            // Clear form data
+            $_POST = [];
+            $_FILES = [];
             
             // Refresh website data
             $stmt = $conn->prepare("SELECT * FROM websites WHERE id = ?");
@@ -139,6 +195,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <i class="fas fa-plus mr-3"></i>
                     Add Website
                 </a>
+                <a href="settings.php" class="block px-4 py-3 text-gray-700 hover:bg-gray-50">
+                    <i class="fas fa-cog mr-3"></i>
+                    Settings
+                </a>
             </nav>
         </aside>
 
@@ -168,7 +228,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     </div>
                 <?php endif; ?>
 
-                <form method="POST" class="space-y-6">
+                <form method="POST" class="space-y-6" enctype="multipart/form-data">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <!-- Title -->
                         <div>
@@ -277,6 +337,58 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
                                   placeholder="List technologies separated by commas (e.g., PHP, MySQL, JavaScript, Bootstrap)"><?php echo htmlspecialchars($_POST['technologies'] ?? $website['technologies']); ?></textarea>
                         <p class="text-sm text-gray-500 mt-1">Separate technologies with commas</p>
+                    </div>
+                    
+                    <!-- Screenshots -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Screenshots</label>
+                        
+                        <!-- Show existing screenshots -->
+                        <?php 
+                        $existing_screenshots = json_decode($website['screenshots'] ?? '[]', true) ?: [];
+                        if (!empty($existing_screenshots)): ?>
+                            <div class="mb-4">
+                                <p class="text-sm text-gray-600 mb-2">Current Screenshots:</p>
+                                <div class="grid grid-cols-3 gap-2">
+                                    <?php foreach ($existing_screenshots as $index => $screenshot): ?>
+                                        <div class="relative">
+                                            <?php 
+                                            $image_path = '../' . $screenshot;
+                                            $full_path = __DIR__ . '/../' . $screenshot;
+                                            ?>
+                                            <?php if (file_exists($full_path)): ?>
+                                                <img src="<?php echo htmlspecialchars($image_path); ?>" alt="Screenshot <?php echo $index + 1; ?>" class="w-full h-20 object-cover rounded border">
+                                            <?php else: ?>
+                                                <div class="w-full h-20 bg-gray-200 rounded border flex items-center justify-center">
+                                                    <span class="text-xs text-gray-500">Missing</span>
+                                                </div>
+                                            <?php endif; ?>
+                                            <label class="flex items-center mt-1">
+                                                <input type="checkbox" name="remove_screenshots[]" value="<?php echo $index; ?>" class="h-4 w-4 text-red-600 focus:ring-red-500 border-gray-300 rounded">
+                                                <span class="ml-2 text-xs text-red-600">Remove</span>
+                                            </label>
+                                        </div>
+                                    <?php endforeach; ?>
+                                </div>
+                            </div>
+                        <?php endif; ?>
+                        
+                        <!-- Upload new screenshots -->
+                        <div class="space-y-3">
+                            <div>
+                                <label class="block text-sm text-gray-600 mb-1">New Screenshot 1</label>
+                                <input type="file" name="screenshots[]" accept="image/*" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                            </div>
+                            <div>
+                                <label class="block text-sm text-gray-600 mb-1">New Screenshot 2</label>
+                                <input type="file" name="screenshots[]" accept="image/*" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                            </div>
+                            <div>
+                                <label class="block text-sm text-gray-600 mb-1">New Screenshot 3</label>
+                                <input type="file" name="screenshots[]" accept="image/*" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                            </div>
+                        </div>
+                        <p class="text-sm text-gray-500 mt-1">Upload up to 3 new screenshot images (PNG, JPG, GIF - Max 5MB each)</p>
                     </div>
 
                     <!-- Featured -->

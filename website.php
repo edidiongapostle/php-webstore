@@ -3,6 +3,14 @@ session_start();
 require_once 'config.php';
 require_once 'functions.php';
 
+// Check maintenance mode
+$maintenance_mode = getSetting('maintenance_mode', '0');
+if ($maintenance_mode === '1' && !isset($_SESSION['admin_logged_in'])) {
+    http_response_code(503);
+    include 'maintenance.php';
+    exit;
+}
+
 // Get website ID from URL
 $website_id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
 
@@ -14,7 +22,12 @@ if (!$website) {
     exit;
 }
 
-$pageTitle = htmlspecialchars($website['title']) . " - WebStore";
+// Get feature settings
+$enable_reviews = getSetting('enable_reviews', '1');
+$enable_wishlist = getSetting('enable_wishlist', '1');
+$site_name = getSetting('site_name', 'WebStore');
+
+$pageTitle = htmlspecialchars($website['title']) . " - " . $site_name;
 ?>
 
 <!DOCTYPE html>
@@ -71,6 +84,27 @@ $pageTitle = htmlspecialchars($website['title']) . " - WebStore";
                 <div class="bg-white rounded-lg shadow-lg overflow-hidden">
                     <img src="<?php echo htmlspecialchars($website['image_url']); ?>" alt="<?php echo htmlspecialchars($website['title']); ?>" class="w-full h-96 object-cover">
                 </div>
+                
+                <!-- Screenshots Gallery -->
+                <?php if (!empty($website['screenshots'])): ?>
+                    <div class="bg-white rounded-lg shadow-lg p-6">
+                        <h3 class="text-lg font-semibold mb-4">Screenshots</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                            <?php 
+                            $screenshots = json_decode($website['screenshots'] ?? '[]', true) ?: [];
+                            foreach ($screenshots as $screenshot): 
+                                if (!empty($screenshot)): ?>
+                                    <div class="relative group cursor-pointer" onclick="openScreenshotModal('<?php echo htmlspecialchars($screenshot); ?>')">
+                                        <img src="<?php echo htmlspecialchars($screenshot); ?>" alt="Website Screenshot" class="w-full h-48 object-cover rounded-lg hover:opacity-90 transition">
+                                        <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-10 transition rounded-lg flex items-center justify-center">
+                                            <i class="fas fa-search-plus text-white opacity-0 group-hover:opacity-100 transition text-2xl"></i>
+                                        </div>
+                                    </div>
+                                <?php endif; ?>
+                            <?php endforeach; ?>
+                        </div>
+                    </div>
+                <?php endif; ?>
                 <?php if ($website['demo_url']): ?>
                     <div class="bg-white rounded-lg shadow-lg p-6">
                         <h3 class="text-lg font-semibold mb-4">Live Demo</h3>
@@ -145,6 +179,12 @@ $pageTitle = htmlspecialchars($website['title']) . " - WebStore";
                                 <i class="fas fa-shopping-cart mr-2"></i>
                                 Add to Cart
                             </button>
+                            <?php if ($enable_wishlist === '1'): ?>
+                            <button type="button" onclick="addToWishlist(<?php echo $website['id']; ?>)" class="flex-1 bg-pink-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-pink-700 transition">
+                                <i class="fas fa-heart mr-2"></i>
+                                Add to Wishlist
+                            </button>
+                            <?php endif; ?>
                             <a href="index.php" class="flex-1 bg-gray-200 text-gray-800 px-6 py-3 rounded-lg font-semibold text-center hover:bg-gray-300 transition">
                                 Continue Shopping
                             </a>
@@ -166,12 +206,145 @@ $pageTitle = htmlspecialchars($website['title']) . " - WebStore";
         </div>
     </div>
 
+    <!-- Reviews Section -->
+    <?php if ($enable_reviews === '1'): ?>
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div class="bg-white rounded-lg shadow-lg p-6">
+            <h3 class="text-2xl font-bold mb-6">Customer Reviews</h3>
+            
+            <!-- Review Form -->
+            <div class="mb-8 p-4 bg-gray-50 rounded-lg">
+                <h4 class="font-semibold mb-4">Leave a Review</h4>
+                <form id="reviewForm" class="space-y-4">
+                    <input type="hidden" name="website_id" value="<?php echo $website['id']; ?>">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Rating</label>
+                        <select name="rating" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                            <option value="5">⭐⭐⭐⭐⭐ Excellent</option>
+                            <option value="4">⭐⭐⭐⭐ Very Good</option>
+                            <option value="3">⭐⭐⭐ Good</option>
+                            <option value="2">⭐⭐ Fair</option>
+                            <option value="1">⭐ Poor</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Your Review</label>
+                        <textarea name="review" rows="4" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="Share your experience with this product..."></textarea>
+                    </div>
+                    <button type="submit" class="bg-indigo-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-indigo-700 transition">
+                        <i class="fas fa-star mr-2"></i>
+                        Submit Review
+                    </button>
+                </form>
+            </div>
+            
+            <!-- Reviews List -->
+            <div class="space-y-4">
+                <div class="text-center py-8 text-gray-500">
+                    <i class="fas fa-star text-4xl mb-4"></i>
+                    <p>Be the first to review this product!</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <?php endif; ?>
+
     <!-- Footer -->
     <footer class="bg-gray-800 text-white py-8">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-            <p>&copy; <?php echo date('Y'); ?> WebStore. All rights reserved.</p>
+            <p>&copy; <?php echo date('Y'); ?> <?php echo htmlspecialchars($site_name); ?>. All rights reserved.</p>
             <p class="mt-2 text-gray-400">Premium websites for your business needs</p>
         </div>
     </footer>
+<script>
+        function addToWishlist(websiteId) {
+            // Simple wishlist functionality using localStorage
+            let wishlist = JSON.parse(localStorage.getItem('wishlist') || '[]');
+            
+            if (!wishlist.includes(websiteId)) {
+                wishlist.push(websiteId);
+                localStorage.setItem('wishlist', JSON.stringify(wishlist));
+                alert('Added to wishlist!');
+            } else {
+                alert('Already in wishlist!');
+            }
+        }
+        
+        // Review form submission
+        document.getElementById('reviewForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            formData.append('action', 'submit_review');
+            
+            fetch('submit_review.php', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Review submitted successfully!');
+                    this.reset();
+                    location.reload();
+                } else {
+                    alert('Error: ' + data.message);
+                }
+            })
+            .catch(error => {
+                alert('Error submitting review. Please try again.');
+            });
+        });
+    </script>
+    
+    <!-- Screenshot Modal -->
+    <div id="screenshotModal" class="fixed inset-0 bg-black bg-opacity-75 z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-lg max-w-4xl max-h-[90vh] overflow-auto">
+            <div class="flex justify-between items-center p-4 border-b">
+                <h3 class="text-lg font-semibold">Screenshot Preview</h3>
+                <button onclick="closeScreenshotModal()" class="text-gray-500 hover:text-gray-700">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+            <div class="p-4">
+                <img id="modalImage" src="" alt="Screenshot" class="w-full h-auto rounded-lg">
+            </div>
+            <div class="p-4 border-t bg-gray-50">
+                <button onclick="closeScreenshotModal()" class="w-full bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700 transition">
+                    Close
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        function openScreenshotModal(imageSrc) {
+            const modal = document.getElementById('screenshotModal');
+            const modalImage = document.getElementById('modalImage');
+            modalImage.src = imageSrc;
+            modal.classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+        }
+        
+        function closeScreenshotModal() {
+            const modal = document.getElementById('screenshotModal');
+            modal.classList.add('hidden');
+            document.body.style.overflow = 'auto';
+        }
+        
+        // Close modal when clicking outside
+        document.getElementById('screenshotModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeScreenshotModal();
+            }
+        });
+        
+        // Close modal with Escape key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeScreenshotModal();
+            }
+        });
+    </script>
 </body>
 </html>

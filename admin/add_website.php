@@ -25,6 +25,35 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $featured = isset($_POST['featured']) ? 1 : 0;
     $status = sanitizeInput($_POST['status'] ?? 'active');
     
+    // Handle screenshot uploads - only if files are uploaded
+    $screenshots = [];
+    if (isset($_FILES['screenshots']) && is_array($_FILES['screenshots']['name'])) {
+        $upload_dir = __DIR__ . '/../uploads/screenshots/';
+        if (!file_exists($upload_dir)) {
+            mkdir($upload_dir, 0755, true);
+        }
+        
+        foreach ($_FILES['screenshots']['name'] as $key => $name) {
+            if (!empty($name) && $_FILES['screenshots']['error'][$key] == UPLOAD_ERR_OK) {
+                $file_size = $_FILES['screenshots']['size'][$key];
+                $file_tmp = $_FILES['screenshots']['tmp_name'][$key];
+                
+                if ($file_size <= 5 * 1024 * 1024) { // 5MB limit
+                    $extension = strtolower(pathinfo($name, PATHINFO_EXTENSION));
+                    if (in_array($extension, ['png', 'jpg', 'jpeg', 'gif'])) {
+                        $filename = 'screenshot_' . time() . '_' . $key . '.' . $extension;
+                        $filepath = $upload_dir . $filename;
+                        if (move_uploaded_file($file_tmp, $filepath)) {
+                            $screenshots[] = 'uploads/screenshots/' . $filename;
+                        }
+                    }
+                }
+            }
+        }
+    }
+    
+    $screenshots_json = json_encode($screenshots);
+    
     // Validation
     if (empty($title)) {
         $errors['title'] = 'Title is required';
@@ -53,17 +82,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (empty($errors)) {
         try {
             $stmt = $conn->prepare("
-                INSERT INTO websites (title, description, price, category, image_url, demo_url, features, technologies, featured, status, created_at, updated_at) 
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+                INSERT INTO websites (title, description, price, category, image_url, demo_url, features, technologies, screenshots, featured, status, created_at, updated_at) 
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             ");
-            $stmt->execute([$title, $description, $price, $category, $image_url, $demo_url, $features, $technologies, $featured, $status]);
+            $stmt->execute([$title, $description, $price, $category, $image_url, $demo_url, $features, $technologies, $screenshots_json, $featured, $status, date('Y-m-d H:i:s'), date('Y-m-d H:i:s')]);
             
             $success = true;
             
             // Clear form data
             $_POST = [];
+            $_FILES = [];
         } catch (Exception $e) {
-            $errors['general'] = 'Failed to add website. Please try again.';
+            $errors['general'] = 'Database error: ' . $e->getMessage();
         }
     }
 }
@@ -109,13 +139,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <i class="fas fa-globe mr-3"></i>
                     Websites
                 </a>
+                <a href="add_website.php" class="block px-4 py-3 text-gray-700 hover:bg-gray-50">
+                    <i class="fas fa-plus mr-3"></i>
+                    Add Website
+                </a>
+                <a href="settings.php" class="block px-4 py-3 text-gray-700 hover:bg-gray-50">
+                    <i class="fas fa-cog mr-3"></i>
+                    Settings
+                </a>
                 <a href="orders.php" class="block px-4 py-3 text-gray-700 hover:bg-gray-50">
                     <i class="fas fa-shopping-cart mr-3"></i>
                     Orders
-                </a>
-                <a href="add_website.php" class="block px-4 py-3 text-gray-700 bg-indigo-50 border-r-4 border-indigo-600">
-                    <i class="fas fa-plus mr-3"></i>
-                    Add Website
                 </a>
             </nav>
         </aside>
@@ -146,7 +180,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     </div>
                 <?php endif; ?>
 
-                <form method="POST" class="space-y-6">
+                <form method="POST" class="space-y-6" enctype="multipart/form-data">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <!-- Title -->
                         <div>
@@ -249,6 +283,34 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
                                   placeholder="List technologies separated by commas (e.g., PHP, MySQL, JavaScript, Bootstrap)"><?php echo htmlspecialchars($_POST['technologies'] ?? ''); ?></textarea>
                         <p class="text-sm text-gray-500 mt-1">Separate technologies with commas</p>
+                    </div>
+                    
+                    <!-- Screenshots -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Screenshots</label>
+                        <div class="space-y-3">
+                            <div>
+                                <label class="block text-sm text-gray-600 mb-1">Screenshot 1</label>
+                                <input type="file" name="screenshots[]" accept="image/*" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                            </div>
+                            <div>
+                                <label class="block text-sm text-gray-600 mb-1">Screenshot 2</label>
+                                <input type="file" name="screenshots[]" accept="image/*" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                            </div>
+                            <div>
+                                <label class="block text-sm text-gray-600 mb-1">Screenshot 3</label>
+                                <input type="file" name="screenshots[]" accept="image/*" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                            </div>
+                            <div>
+                                <label class="block text-sm text-gray-600 mb-1">Screenshot 4</label>
+                                <input type="file" name="screenshots[]" accept="image/*" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                            </div>
+                            <div>
+                                <label class="block text-sm text-gray-600 mb-1">Screenshot 5</label>
+                                <input type="file" name="screenshots[]" accept="image/*" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                            </div>
+                        </div>
+                        <p class="text-sm text-gray-500 mt-1">Upload up to 5 screenshot images (PNG, JPG, GIF - Max 5MB each)</p>
                     </div>
 
                     <!-- Featured -->

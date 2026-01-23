@@ -16,7 +16,22 @@ $active_tab = $_GET['tab'] ?? 'general';
 // Handle form submissions
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (isset($_POST['action']) && $_POST['action'] === 'save_settings') {
-        foreach ($_POST['settings'] as $key => $value) {
+        // Define all possible settings to ensure they get processed
+        $all_settings = [
+            'site_name', 'site_email', 'currency', 'timezone', 'max_upload_size', 'items_per_page',
+            'tax_rate', 'shipping_enabled', 'anonymous_checkout', 'crypto_payments',
+            'enable_reviews', 'enable_wishlist', 'auto_backup', 'maintenance_mode',
+            'seo_title', 'seo_description', 'seo_keywords'
+        ];
+        
+        foreach ($all_settings as $key) {
+            $value = isset($_POST['settings'][$key]) ? $_POST['settings'][$key] : '';
+            
+            // Handle checkboxes specifically
+            if (in_array($key, ['shipping_enabled', 'anonymous_checkout', 'crypto_payments', 'enable_reviews', 'enable_wishlist', 'auto_backup', 'maintenance_mode'])) {
+                $value = isset($_POST['settings'][$key]) ? '1' : '0';
+            }
+            
             try {
                 $stmt = $conn->prepare("UPDATE settings SET setting_value = ?, updated_at = CURRENT_TIMESTAMP WHERE setting_key = ?");
                 $stmt->execute([$value, $key]);
@@ -30,10 +45,100 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
     
+    if (isset($_POST['action']) && $_POST['action'] === 'toggle_payment') {
+        $payment_id = sanitizeInput($_POST['payment_id'] ?? '');
+        $enabled = sanitizeInput($_POST['enabled'] ?? '');
+        
+        try {
+            $stmt = $conn->prepare("UPDATE payment_methods SET enabled = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?");
+            $stmt->execute([$enabled, $payment_id]);
+            $success = 'Payment method updated successfully!';
+        } catch (Exception $e) {
+            $errors['payment'] = 'Failed to update payment method. Please try again.';
+        }
+    }
+    
     if (isset($_POST['action']) && $_POST['action'] === 'save_payment') {
         $payment_id = sanitizeInput($_POST['payment_id'] ?? '');
         $name = sanitizeInput($_POST['name'] ?? '');
         $enabled = isset($_POST['enabled']) ? 1 : 0;
+        
+        // Get existing config
+        $stmt = $conn->prepare("SELECT config_data FROM payment_methods WHERE id = ?");
+        $stmt->execute([$payment_id]);
+        $existing_config = json_decode($stmt->fetchColumn(), true) ?: [];
+        
+        // Handle file uploads
+        $btc_qr_code = $existing_config['btc_qr_code'] ?? '';
+        $eth_qr_code = $existing_config['eth_qr_code'] ?? '';
+        $ltc_qr_code = $existing_config['ltc_qr_code'] ?? '';
+        
+        // Upload directory
+        $upload_dir = __DIR__ . '/../uploads/qr_codes/';
+        if (!file_exists($upload_dir)) {
+            mkdir($upload_dir, 0755, true);
+        }
+        
+        // Handle Bitcoin QR Code
+        if (isset($_POST['remove_btc_qr']) && $_POST['remove_btc_qr'] == '1') {
+            if (file_exists(__DIR__ . '/../' . $btc_qr_code)) {
+                unlink(__DIR__ . '/../' . $btc_qr_code);
+            }
+            $btc_qr_code = '';
+        } elseif (isset($_FILES['btc_qr_code']) && $_FILES['btc_qr_code']['error'] == 0) {
+            $file = $_FILES['btc_qr_code'];
+            if ($file['size'] <= 2 * 1024 * 1024) { // 2MB limit
+                $extension = pathinfo($file['name'], PATHINFO_EXTENSION);
+                if (in_array(strtolower($extension), ['png', 'jpg', 'jpeg', 'gif'])) {
+                    $filename = 'btc_' . time() . '.' . $extension;
+                    $filepath = $upload_dir . $filename;
+                    if (move_uploaded_file($file['tmp_name'], $filepath)) {
+                        $btc_qr_code = 'uploads/qr_codes/' . $filename;
+                    }
+                }
+            }
+        }
+        
+        // Handle Ethereum QR Code
+        if (isset($_POST['remove_eth_qr']) && $_POST['remove_eth_qr'] == '1') {
+            if (file_exists(__DIR__ . '/../' . $eth_qr_code)) {
+                unlink(__DIR__ . '/../' . $eth_qr_code);
+            }
+            $eth_qr_code = '';
+        } elseif (isset($_FILES['eth_qr_code']) && $_FILES['eth_qr_code']['error'] == 0) {
+            $file = $_FILES['eth_qr_code'];
+            if ($file['size'] <= 2 * 1024 * 1024) { // 2MB limit
+                $extension = pathinfo($file['name'], PATHINFO_EXTENSION);
+                if (in_array(strtolower($extension), ['png', 'jpg', 'jpeg', 'gif'])) {
+                    $filename = 'eth_' . time() . '.' . $extension;
+                    $filepath = $upload_dir . $filename;
+                    if (move_uploaded_file($file['tmp_name'], $filepath)) {
+                        $eth_qr_code = 'uploads/qr_codes/' . $filename;
+                    }
+                }
+            }
+        }
+        
+        // Handle Litecoin QR Code
+        if (isset($_POST['remove_ltc_qr']) && $_POST['remove_ltc_qr'] == '1') {
+            if (file_exists(__DIR__ . '/../' . $ltc_qr_code)) {
+                unlink(__DIR__ . '/../' . $ltc_qr_code);
+            }
+            $ltc_qr_code = '';
+        } elseif (isset($_FILES['ltc_qr_code']) && $_FILES['ltc_qr_code']['error'] == 0) {
+            $file = $_FILES['ltc_qr_code'];
+            if ($file['size'] <= 2 * 1024 * 1024) { // 2MB limit
+                $extension = pathinfo($file['name'], PATHINFO_EXTENSION);
+                if (in_array(strtolower($extension), ['png', 'jpg', 'jpeg', 'gif'])) {
+                    $filename = 'ltc_' . time() . '.' . $extension;
+                    $filepath = $upload_dir . $filename;
+                    if (move_uploaded_file($file['tmp_name'], $filepath)) {
+                        $ltc_qr_code = 'uploads/qr_codes/' . $filename;
+                    }
+                }
+            }
+        }
+        
         $config_data = json_encode([
             'processor' => sanitizeInput($_POST['processor'] ?? ''),
             'public_key' => sanitizeInput($_POST['public_key'] ?? ''),
@@ -41,6 +146,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             'sandbox' => isset($_POST['sandbox']) ? 1 : 0,
             'btc_address' => sanitizeInput($_POST['btc_address'] ?? ''),
             'eth_address' => sanitizeInput($_POST['eth_address'] ?? ''),
+            'ltc_address' => sanitizeInput($_POST['ltc_address'] ?? ''),
+            'btc_qr_code' => $btc_qr_code,
+            'eth_qr_code' => $eth_qr_code,
+            'ltc_qr_code' => $ltc_qr_code,
             'enabled_coins' => $_POST['enabled_coins'] ?? []
         ]);
         
@@ -251,9 +360,8 @@ $pageTitle = "Settings - WebStore Admin";
                                     </span>
                                 </div>
                                 <form method="POST" class="inline">
-                                    <input type="hidden" name="action" value="save_payment">
+                                    <input type="hidden" name="action" value="toggle_payment">
                                     <input type="hidden" name="payment_id" value="<?php echo $payment['id']; ?>">
-                                    <input type="hidden" name="name" value="<?php echo htmlspecialchars($payment['name']); ?>">
                                     <input type="hidden" name="enabled" value="<?php echo $payment['enabled'] ? '0' : '1'; ?>">
                                     <button type="submit" class="px-4 py-2 rounded-lg font-medium <?php echo $payment['enabled'] ? 'bg-red-600 text-white hover:bg-red-700' : 'bg-green-600 text-white hover:bg-green-700'; ?> transition">
                                         <?php echo $payment['enabled'] ? 'Disable' : 'Enable'; ?>
@@ -261,7 +369,7 @@ $pageTitle = "Settings - WebStore Admin";
                                 </form>
                             </div>
                             
-                            <form method="POST" class="space-y-4">
+                            <form method="POST" class="space-y-4" enctype="multipart/form-data">
                                 <input type="hidden" name="action" value="save_payment">
                                 <input type="hidden" name="payment_id" value="<?php echo $payment['id']; ?>">
                                 <input type="hidden" name="name" value="<?php echo htmlspecialchars($payment['name']); ?>">
@@ -306,9 +414,66 @@ $pageTitle = "Settings - WebStore Admin";
                                         </div>
                                         
                                         <div>
+                                            <label class="block text-sm font-medium text-gray-700 mb-2">Bitcoin QR Code</label>
+                                            <?php if (!empty($config['btc_qr_code'])): ?>
+                                                <div class="mb-2">
+                                                    <img src="<?php echo htmlspecialchars($config['btc_qr_code']); ?>" alt="Bitcoin QR Code" class="h-20 w-20 border rounded">
+                                                    <br>
+                                                    <label class="flex items-center mt-2">
+                                                        <input type="checkbox" name="remove_btc_qr" value="1" class="h-4 w-4 text-red-600 focus:ring-red-500 border-gray-300 rounded">
+                                                        <span class="ml-2 text-sm text-red-600">Remove current QR code</span>
+                                                    </label>
+                                                </div>
+                                            <?php endif; ?>
+                                            <input type="file" name="btc_qr_code" accept="image/*" 
+                                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                                            <p class="text-xs text-gray-500 mt-1">Upload QR code image (PNG, JPG, GIF - Max 2MB)</p>
+                                        </div>
+                                        
+                                        <div>
                                             <label class="block text-sm font-medium text-gray-700 mb-2">Ethereum Address</label>
                                             <input type="text" name="eth_address" value="<?php echo htmlspecialchars($config['eth_address'] ?? ''); ?>" 
                                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                                        </div>
+                                        
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700 mb-2">Ethereum QR Code</label>
+                                            <?php if (!empty($config['eth_qr_code'])): ?>
+                                                <div class="mb-2">
+                                                    <img src="<?php echo htmlspecialchars($config['eth_qr_code']); ?>" alt="Ethereum QR Code" class="h-20 w-20 border rounded">
+                                                    <br>
+                                                    <label class="flex items-center mt-2">
+                                                        <input type="checkbox" name="remove_eth_qr" value="1" class="h-4 w-4 text-red-600 focus:ring-red-500 border-gray-300 rounded">
+                                                        <span class="ml-2 text-sm text-red-600">Remove current QR code</span>
+                                                    </label>
+                                                </div>
+                                            <?php endif; ?>
+                                            <input type="file" name="eth_qr_code" accept="image/*" 
+                                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                                            <p class="text-xs text-gray-500 mt-1">Upload QR code image (PNG, JPG, GIF - Max 2MB)</p>
+                                        </div>
+                                        
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700 mb-2">Litecoin Address</label>
+                                            <input type="text" name="ltc_address" value="<?php echo htmlspecialchars($config['ltc_address'] ?? ''); ?>" 
+                                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                                        </div>
+                                        
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700 mb-2">Litecoin QR Code</label>
+                                            <?php if (!empty($config['ltc_qr_code'])): ?>
+                                                <div class="mb-2">
+                                                    <img src="<?php echo htmlspecialchars($config['ltc_qr_code']); ?>" alt="Litecoin QR Code" class="h-20 w-20 border rounded">
+                                                    <br>
+                                                    <label class="flex items-center mt-2">
+                                                        <input type="checkbox" name="remove_ltc_qr" value="1" class="h-4 w-4 text-red-600 focus:ring-red-500 border-gray-300 rounded">
+                                                        <span class="ml-2 text-sm text-red-600">Remove current QR code</span>
+                                                    </label>
+                                                </div>
+                                            <?php endif; ?>
+                                            <input type="file" name="ltc_qr_code" accept="image/*" 
+                                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                                            <p class="text-xs text-gray-500 mt-1">Upload QR code image (PNG, JPG, GIF - Max 2MB)</p>
                                         </div>
                                         
                                         <div>
@@ -473,6 +638,34 @@ $pageTitle = "Settings - WebStore Admin";
                             </button>
                         </div>
                     </form>
+                    
+                    <!-- Backup Management -->
+                    <div class="bg-white rounded-lg shadow-lg p-6 mt-6">
+                        <h3 class="text-xl font-semibold mb-6">Backup Management</h3>
+                        
+                        <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+                            <h4 class="font-semibold text-blue-900 mb-2">Automatic Backups</h4>
+                            <p class="text-sm text-blue-800">
+                                <?php 
+                                $auto_backup = getSetting('auto_backup', '1');
+                                echo $auto_backup === '1' ? 'Automatic backups are enabled and run daily.' : 'Automatic backups are disabled.';
+                                ?>
+                            </p>
+                        </div>
+                        
+                        <div class="flex space-x-4">
+                            <button onclick="createBackup()" class="bg-green-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-green-700 transition">
+                                <i class="fas fa-download mr-2"></i>
+                                Create Backup Now
+                            </button>
+                            <button onclick="viewBackups()" class="bg-gray-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-gray-700 transition">
+                                <i class="fas fa-folder mr-2"></i>
+                                View Backups
+                            </button>
+                        </div>
+                        
+                        <div id="backupResult" class="mt-4 hidden"></div>
+                    </div>
                 </div>
             <?php endif; ?>
 
@@ -518,5 +711,30 @@ $pageTitle = "Settings - WebStore Admin";
             <?php endif; ?>
         </main>
     </div>
+    
+    <script>
+        function createBackup() {
+            const resultDiv = document.getElementById('backupResult');
+            resultDiv.innerHTML = '<div class="bg-blue-100 border border-blue-400 text-blue-700 px-4 py-3 rounded">Creating backup...</div>';
+            resultDiv.classList.remove('hidden');
+            
+            fetch('../backup.php?manual=1')
+                .then(response => response.text())
+                .then(data => {
+                    if (data.includes('success')) {
+                        resultDiv.innerHTML = '<div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded"><i class="fas fa-check-circle mr-2"></i>Backup created successfully!</div>';
+                    } else {
+                        resultDiv.innerHTML = '<div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded"><i class="fas fa-exclamation-triangle mr-2"></i>Backup failed. Please try again.</div>';
+                    }
+                })
+                .catch(error => {
+                    resultDiv.innerHTML = '<div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded"><i class="fas fa-exclamation-triangle mr-2"></i>Error creating backup.</div>';
+                });
+        }
+        
+        function viewBackups() {
+            window.open('../backups/', '_blank');
+        }
+    </script>
 </body>
 </html>

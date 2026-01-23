@@ -3,9 +3,24 @@ session_start();
 require_once 'config.php';
 require_once 'functions.php';
 
+// Check maintenance mode
+$maintenance_mode = getSetting('maintenance_mode', '0');
+if ($maintenance_mode === '1' && !isset($_SESSION['admin_logged_in'])) {
+    http_response_code(503);
+    include 'maintenance.php';
+    exit;
+}
+
 // Get all websites from database
 $websites = getAllWebsites();
-$pageTitle = "Website Portfolio - Buy Premium Websites";
+
+// Get settings from database
+$site_name = getSetting('site_name', 'WebStore');
+$seo_title = getSetting('seo_title', 'Premium Websites for Sale');
+$seo_description = getSetting('seo_description', 'Buy premium websites and templates for your business');
+$seo_keywords = getSetting('seo_keywords', 'websites, templates, premium, business');
+
+$pageTitle = $seo_title . " - " . $site_name;
 ?>
 
 <!DOCTYPE html>
@@ -14,6 +29,9 @@ $pageTitle = "Website Portfolio - Buy Premium Websites";
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?php echo $pageTitle; ?></title>
+    <meta name="description" content="<?php echo htmlspecialchars($seo_description); ?>">
+    <meta name="keywords" content="<?php echo htmlspecialchars($seo_keywords); ?>">
+    <meta name="author" content="<?php echo htmlspecialchars($site_name); ?>">
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
@@ -23,7 +41,7 @@ $pageTitle = "Website Portfolio - Buy Premium Websites";
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between h-16">
                 <div class="flex items-center">
-                    <h1 class="text-2xl font-bold text-indigo-600">WebStore</h1>
+                    <h1 class="text-2xl font-bold text-indigo-600"><?php echo htmlspecialchars($site_name); ?></h1>
                 </div>
                 <div class="flex items-center space-x-4">
                     <a href="index.php" class="text-gray-700 hover:text-indigo-600 px-3 py-2 rounded-md text-sm font-medium">Home</a>

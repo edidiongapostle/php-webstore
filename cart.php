@@ -81,19 +81,19 @@ $pageTitle = "Shopping Cart - " . $site_name;
                 </a>
             </div>
         <?php else: ?>
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
                 <!-- Cart Items -->
                 <div class="lg:col-span-2 space-y-4">
                     <?php foreach ($cart_items as $item): ?>
-                        <div class="bg-white rounded-lg shadow-lg p-6">
-                            <div class="flex items-center space-x-4">
-                                <img src="<?php echo htmlspecialchars($item['image_url']); ?>" alt="<?php echo htmlspecialchars($item['title']); ?>" class="w-24 h-24 object-cover rounded-lg">
+                        <div class="bg-white rounded-lg shadow-lg p-4 sm:p-6">
+                            <div class="flex flex-col sm:flex-row sm:items-center space-y-4 sm:space-y-0 sm:space-x-4">
+                                <img src="<?php echo htmlspecialchars($item['image_url']); ?>" alt="<?php echo htmlspecialchars($item['title']); ?>" class="w-20 h-20 sm:w-24 sm:h-24 object-cover rounded-lg">
                                 <div class="flex-1">
                                     <h4 class="text-lg font-semibold"><?php echo htmlspecialchars($item['title']); ?></h4>
                                     <p class="text-gray-600 text-sm mb-2"><?php echo htmlspecialchars($item['category']); ?></p>
-                                    <p class="text-xl font-bold text-indigo-600"><?php echo formatPrice($item['price']); ?></p>
+                                    <p class="text-lg sm:text-xl font-bold text-indigo-600"><?php echo formatPrice($item['price']); ?></p>
                                 </div>
-                                <div class="flex flex-col space-y-2">
+                                <div class="flex flex-row sm:flex-col space-x-4 sm:space-x-0 sm:space-y-2">
                                     <a href="website.php?id=<?php echo $item['id']; ?>" class="text-indigo-600 hover:text-indigo-800 text-sm">
                                         <i class="fas fa-eye"></i> View
                                     </a>

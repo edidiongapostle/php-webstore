@@ -1,4 +1,7 @@
 <?php
+// Define admin section to optimize loading
+define('ADMIN_SECTION', true);
+
 session_start();
 require_once '../config.php';
 require_once '../functions.php';
@@ -215,6 +218,10 @@ $pageTitle = "Settings - WebStore Admin";
                 <a href="websites.php" class="block px-4 py-3 text-gray-700 hover:bg-gray-50">
                     <i class="fas fa-globe mr-3"></i>
                     Websites
+                </a>
+                <a href="categories.php" class="block px-4 py-3 text-gray-700 hover:bg-gray-50">
+                    <i class="fas fa-tags mr-3"></i>
+                    Categories
                 </a>
                 <a href="orders.php" class="block px-4 py-3 text-gray-700 hover:bg-gray-50">
                     <i class="fas fa-shopping-cart mr-3"></i>

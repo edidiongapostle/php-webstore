@@ -21,9 +21,14 @@ define('SITE_NAME', 'WebStore');
 define('SITE_EMAIL', 'admin@webstore.com');
 define('CURRENCY', 'USD');
 
-// Error reporting
-error_reporting(E_ALL);
-ini_set('display_errors', 1);
+// Error reporting (disable in production for better performance)
+if (getenv('ENVIRONMENT') === 'development') {
+    error_reporting(E_ALL);
+    ini_set('display_errors', 1);
+} else {
+    error_reporting(0);
+    ini_set('display_errors', 0);
+}
 
 // Set timezone
 date_default_timezone_set('UTC');

@@ -85,9 +85,11 @@ $pageTitle = "Checkout - WebStore";
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between h-16">
                 <div class="flex items-center">
-                    <h1 class="text-2xl font-bold text-indigo-600"><?php echo htmlspecialchars($site_name); ?></h1>
+                    <h1 class="text-xl sm:text-2xl font-bold text-indigo-600"><?php echo htmlspecialchars($site_name); ?></h1>
                 </div>
-                <div class="flex items-center space-x-4">
+                
+                <!-- Desktop Navigation -->
+                <div class="hidden md:flex items-center space-x-4">
                     <a href="index.php" class="text-gray-700 hover:text-indigo-600 px-3 py-2 rounded-md text-sm font-medium">Home</a>
                     <a href="cart.php" class="relative text-gray-700 hover:text-indigo-600 px-3 py-2 rounded-md text-sm font-medium">
                         <i class="fas fa-shopping-cart"></i>
@@ -97,34 +99,55 @@ $pageTitle = "Checkout - WebStore";
                             </span>
                         <?php endif; ?>
                     </a>
-                    <a href="admin/login.php" class="bg-indigo-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-indigo-700">Admin</a>
+                </div>
+                
+                <!-- Mobile menu button -->
+                <div class="md:hidden flex items-center">
+                    <a href="cart.php" class="relative text-gray-700 hover:text-indigo-600 px-3 py-2 rounded-md text-sm font-medium mr-2">
+                        <i class="fas fa-shopping-cart"></i>
+                        <?php if (isset($_SESSION['cart']) && count($_SESSION['cart']) > 0): ?>
+                            <span class="absolute -top-1 -right-1 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs">
+                                <?php echo count($_SESSION['cart']); ?>
+                            </span>
+                        <?php endif; ?>
+                    </a>
+                    <button onclick="toggleMobileMenu()" class="text-gray-700 hover:text-indigo-600 p-2 rounded-md">
+                        <i class="fas fa-bars text-xl"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Mobile Navigation -->
+            <div id="mobileMenu" class="hidden md:hidden pb-4">
+                <div class="flex flex-col space-y-2">
+                    <a href="index.php" class="text-gray-700 hover:text-indigo-600 px-3 py-2 rounded-md text-sm font-medium">Home</a>
                 </div>
             </div>
         </div>
     </nav>
 
     <!-- Checkout Content -->
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <h2 class="text-3xl font-bold mb-8">Checkout</h2>
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
+        <h2 class="text-2xl sm:text-3xl font-bold mb-6 sm:mb-8">Checkout</h2>
 
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
             <!-- Checkout Form -->
             <div class="lg:col-span-2">
                 <form method="POST" action="payment.php" class="space-y-6">
                     <!-- Billing Information -->
-                    <div class="bg-white rounded-lg shadow-lg p-6">
-                        <h3 class="text-xl font-semibold mb-4">Billing Information</h3>
+                    <div class="bg-white rounded-lg shadow-lg p-4 sm:p-6">
+                        <h3 class="text-lg sm:text-xl font-semibold mb-4">Billing Information</h3>
                         
                         <!-- Anonymous Checkout Option -->
                         <?php if ($anonymous_checkout_enabled === '1'): ?>
-                        <div class="mb-6">
-                            <label class="flex items-center">
-                                <input type="checkbox" name="anonymous_checkout" value="1" class="mr-2 h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
-                                       onchange="toggleAnonymousFields(this.checked)">
-                                <span class="text-sm font-medium text-gray-700">Checkout Anonymously</span>
-                            </label>
-                            <p class="text-sm text-gray-500 mt-1">Check this to skip personal information fields</p>
-                        </div>
+                            <div class="mb-6">
+                                <label class="flex items-center">
+                                    <input type="checkbox" name="anonymous_checkout" value="1" 
+                                           class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded">
+                                    <span class="ml-2 text-sm text-gray-700">Checkout as Guest</span>
+                                </label>
+                                <p class="text-xs text-gray-500 mt-1">No account required - quick and easy checkout</p>
+                            </div>
                         <?php endif; ?>
                         
                         <div id="billing-fields">
@@ -339,5 +362,22 @@ $pageTitle = "Checkout - WebStore";
             <p class="mt-2 text-gray-400">Premium websites for your business needs</p>
         </div>
     </footer>
+    
+    <script>
+        function toggleMobileMenu() {
+            const menu = document.getElementById('mobileMenu');
+            menu.classList.toggle('hidden');
+        }
+        
+        // Close mobile menu when clicking outside
+        document.addEventListener('click', function(event) {
+            const menu = document.getElementById('mobileMenu');
+            const menuButton = event.target.closest('button');
+            
+            if (!menu.contains(event.target) && (!menuButton || !menuButton.onclick)) {
+                menu.classList.add('hidden');
+            }
+        });
+    </script>
 </body>
 </html>

@@ -1,7 +1,4 @@
 <?php
-// Define admin section to optimize loading
-define('ADMIN_SECTION', true);
-
 session_start();
 require_once '../config.php';
 require_once '../functions.php';
@@ -30,17 +27,8 @@ if (isset($_GET['toggle_featured']) && is_numeric($_GET['toggle_featured'])) {
     exit;
 }
 
-// Pagination
-$page = isset($_GET['page']) ? max(1, (int)$_GET['page']) : 1;
-$per_page = 20;
-$offset = ($page - 1) * $per_page;
-
-// Get total count for pagination
-$total_websites_count = $conn->query("SELECT COUNT(*) as count FROM websites")->fetch()['count'];
-$total_pages = ceil($total_websites_count / $per_page);
-
-// Get websites with pagination and optimized query
-$websites = $conn->query("SELECT * FROM websites ORDER BY created_at DESC LIMIT $per_page OFFSET $offset")->fetchAll();
+// Get all websites
+$websites = $conn->query("SELECT * FROM websites ORDER BY created_at DESC")->fetchAll();
 ?>
 
 <!DOCTYPE html>
@@ -82,10 +70,6 @@ $websites = $conn->query("SELECT * FROM websites ORDER BY created_at DESC LIMIT 
                 <a href="websites.php" class="block px-4 py-3 text-gray-700 bg-indigo-50 border-r-4 border-indigo-600">
                     <i class="fas fa-globe mr-3"></i>
                     Websites
-                </a>
-                <a href="categories.php" class="block px-4 py-3 text-gray-700 hover:bg-gray-50">
-                    <i class="fas fa-tags mr-3"></i>
-                    Categories
                 </a>
                 <a href="orders.php" class="block px-4 py-3 text-gray-700 hover:bg-gray-50">
                     <i class="fas fa-shopping-cart mr-3"></i>
@@ -152,7 +136,7 @@ $websites = $conn->query("SELECT * FROM websites ORDER BY created_at DESC LIMIT 
                                 <?php foreach ($websites as $website): ?>
                                     <tr>
                                         <td class="px-6 py-4 whitespace-nowrap">
-                                            <img src="<?php echo getImageUrl($website['image_url']); ?>" alt="<?php echo htmlspecialchars($website['title']); ?>" class="w-16 h-16 object-cover rounded-lg" onerror="this.src='https://via.placeholder.com/400x300/cccccc/666666?text=Error'">
+                                            <img src="../<?php echo htmlspecialchars($website['image_url']); ?>" alt="<?php echo htmlspecialchars($website['title']); ?>" class="w-16 h-16 object-cover rounded-lg">
                                         </td>
                                         <td class="px-6 py-4">
                                             <div class="text-sm font-medium text-gray-900"><?php echo htmlspecialchars($website['title']); ?></div>
@@ -203,36 +187,6 @@ $websites = $conn->query("SELECT * FROM websites ORDER BY created_at DESC LIMIT 
                 </div>
             </div>
 
-            <!-- Pagination -->
-            <?php if ($total_pages > 1): ?>
-                <div class="mt-6 flex justify-between items-center">
-                    <div class="text-sm text-gray-700">
-                        Showing <?php echo ($page - 1) * $per_page + 1; ?> to <?php echo min($page * $per_page, $total_websites_count); ?> of <?php echo $total_websites_count; ?> results
-                    </div>
-                    <div class="flex space-x-2">
-                        <?php if ($page > 1): ?>
-                            <a href="?page=<?php echo $page - 1; ?>" class="px-3 py-2 bg-white border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50">
-                                Previous
-                            </a>
-                        <?php endif; ?>
-                        
-                        <?php for ($i = max(1, $page - 2); $i <= min($total_pages, $page + 2); $i++): ?>
-                            <?php if ($i == $page): ?>
-                                <span class="px-3 py-2 bg-indigo-600 border border-indigo-600 rounded-md text-sm font-medium text-white"><?php echo $i; ?></span>
-                            <?php else: ?>
-                                <a href="?page=<?php echo $i; ?>" class="px-3 py-2 bg-white border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50"><?php echo $i; ?></a>
-                            <?php endif; ?>
-                        <?php endfor; ?>
-                        
-                        <?php if ($page < $total_pages): ?>
-                            <a href="?page=<?php echo $page + 1; ?>" class="px-3 py-2 bg-white border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50">
-                                Next
-                            </a>
-                        <?php endif; ?>
-                    </div>
-                </div>
-            <?php endif; ?>
-
             <!-- Statistics -->
             <div class="mt-8 grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div class="bg-white rounded-lg shadow-lg p-6">
@@ -242,7 +196,7 @@ $websites = $conn->query("SELECT * FROM websites ORDER BY created_at DESC LIMIT 
                         </div>
                         <div class="ml-4">
                             <p class="text-sm text-gray-500">Total Websites</p>
-                            <p class="text-2xl font-bold"><?php echo $total_websites_count; ?></p>
+                            <p class="text-2xl font-bold"><?php echo count($websites); ?></p>
                         </div>
                     </div>
                 </div>

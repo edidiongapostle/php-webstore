@@ -1,5 +1,8 @@
 <?php
-$pageTitle = "Privacy Policy - WebStore";
+require_once 'config.php';
+require_once 'functions.php';
+$site_name = getSetting('site_name', 'WebStore');
+$pageTitle = "Privacy Policy - " . $site_name;
 ?>
 
 <!DOCTYPE html>
@@ -17,15 +20,46 @@ $pageTitle = "Privacy Policy - WebStore";
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between h-16">
                 <div class="flex items-center">
-                    <h1 class="text-2xl font-bold text-indigo-600">WebStore</h1>
+                    <h1 class="text-2xl font-bold text-indigo-600"><?php echo htmlspecialchars($site_name); ?></h1>
                 </div>
                 <div class="flex items-center space-x-4">
+                    <a href="index.php" class="text-gray-700 hover:text-indigo-600 px-3 py-2 rounded-md text-sm font-medium hidden md:block">Home</a>
+                    <a href="cart.php" class="relative text-gray-700 hover:text-indigo-600 px-3 py-2 rounded-md text-sm font-medium hidden md:block">
+                        <i class="fas fa-shopping-cart"></i>
+                        <?php 
+                        $cart_count = getCartCount();
+                        if ($cart_count > 0): 
+                        ?>
+                            <span class="absolute -top-1 -right-1 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs">
+                                <?php echo $cart_count; ?>
+                            </span>
+                        <?php endif; ?>
+                    </a>
+                    <a href="contact.php" class="text-gray-700 hover:text-indigo-600 px-3 py-2 rounded-md text-sm font-medium hidden md:block">Contact</a>
+                    <a href="admin/login.php" class="bg-indigo-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-indigo-700 hidden md:block">Admin</a>
+                </div>
+                
+                <!-- Mobile menu button -->
+                <div class="md:hidden flex items-center">
+                    <button id="mobile-menu-button" class="text-gray-700 hover:text-indigo-600 focus:outline-none focus:text-indigo-600">
+                        <i class="fas fa-bars text-xl"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Mobile Navigation -->
+            <div id="mobile-menu" class="hidden md:hidden pb-4">
+                <div class="flex flex-col space-y-2">
                     <a href="index.php" class="text-gray-700 hover:text-indigo-600 px-3 py-2 rounded-md text-sm font-medium">Home</a>
                     <a href="cart.php" class="relative text-gray-700 hover:text-indigo-600 px-3 py-2 rounded-md text-sm font-medium">
-                        <i class="fas fa-shopping-cart"></i>
-                        <?php if (isset($_SESSION['cart']) && count($_SESSION['cart']) > 0): ?>
-                            <span class="absolute -top-1 -right-1 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs">
-                                <?php echo count($_SESSION['cart']); ?>
+                        <i class="fas fa-shopping-cart mr-2"></i>
+                        Cart
+                        <?php 
+                        $cart_count = getCartCount();
+                        if ($cart_count > 0): 
+                        ?>
+                            <span class="ml-2 bg-red-500 text-white rounded-full px-2 py-1 text-xs">
+                                <?php echo $cart_count; ?>
                             </span>
                         <?php endif; ?>
                     </a>
@@ -197,7 +231,7 @@ $pageTitle = "Privacy Policy - WebStore";
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
                 <div>
-                    <h3 class="text-lg font-semibold mb-4">WebStore</h3>
+                    <h3 class="text-lg font-semibold mb-4"><?php echo htmlspecialchars($site_name); ?></h3>
                     <p class="text-gray-400">Premium websites for your business needs</p>
                 </div>
                 <div>
@@ -212,14 +246,22 @@ $pageTitle = "Privacy Policy - WebStore";
                     <h3 class="text-lg font-semibold mb-4">Legal</h3>
                     <ul class="space-y-2">
                         <li><a href="privacy.php" class="text-gray-400 hover:text-white">Privacy Policy</a></li>
-                        <li><a href="#" class="text-gray-400 hover:text-white">Terms of Service</a></li>
+                        <li><a href="terms.php" class="text-gray-400 hover:text-white">Terms of Service</a></li>
                     </ul>
                 </div>
             </div>
             <div class="mt-8 pt-8 border-t border-gray-700 text-center">
-                <p>&copy; <?php echo date('Y'); ?> WebStore. All rights reserved.</p>
+                <p>&copy; <?php echo date('Y'); ?> <?php echo htmlspecialchars($site_name); ?>. All rights reserved.</p>
             </div>
         </div>
     </footer>
+
+    <script>
+        // Mobile menu toggle
+        document.getElementById('mobile-menu-button').addEventListener('click', function() {
+            const mobileMenu = document.getElementById('mobile-menu');
+            mobileMenu.classList.toggle('hidden');
+        });
+    </script>
 </body>
 </html>

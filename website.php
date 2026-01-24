@@ -48,12 +48,42 @@ $pageTitle = htmlspecialchars($website['title']) . " - " . $site_name;
                     <h1 class="text-2xl font-bold text-indigo-600">WebStore</h1>
                 </div>
                 <div class="flex items-center space-x-4">
+                    <a href="index.php" class="text-gray-700 hover:text-indigo-600 px-3 py-2 rounded-md text-sm font-medium hidden md:block">Home</a>
+                    <a href="cart.php" class="relative text-gray-700 hover:text-indigo-600 px-3 py-2 rounded-md text-sm font-medium hidden md:block">
+                        <i class="fas fa-shopping-cart"></i>
+                        <?php 
+                        $cart_count = getCartCount();
+                        if ($cart_count > 0): 
+                        ?>
+                            <span class="absolute -top-1 -right-1 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs">
+                                <?php echo $cart_count; ?>
+                            </span>
+                        <?php endif; ?>
+                    </a>
+                    <a href="admin/login.php" class="bg-indigo-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-indigo-700 hidden md:block">Admin</a>
+                </div>
+                
+                <!-- Mobile menu button -->
+                <div class="md:hidden flex items-center">
+                    <button id="mobile-menu-button" class="text-gray-700 hover:text-indigo-600 focus:outline-none focus:text-indigo-600">
+                        <i class="fas fa-bars text-xl"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Mobile Navigation -->
+            <div id="mobile-menu" class="hidden md:hidden pb-4">
+                <div class="flex flex-col space-y-2">
                     <a href="index.php" class="text-gray-700 hover:text-indigo-600 px-3 py-2 rounded-md text-sm font-medium">Home</a>
                     <a href="cart.php" class="relative text-gray-700 hover:text-indigo-600 px-3 py-2 rounded-md text-sm font-medium">
-                        <i class="fas fa-shopping-cart"></i>
-                        <?php if (isset($_SESSION['cart']) && count($_SESSION['cart']) > 0): ?>
-                            <span class="absolute -top-1 -right-1 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs">
-                                <?php echo count($_SESSION['cart']); ?>
+                        <i class="fas fa-shopping-cart mr-2"></i>
+                        Cart
+                        <?php 
+                        $cart_count = getCartCount();
+                        if ($cart_count > 0): 
+                        ?>
+                            <span class="ml-2 bg-red-500 text-white rounded-full px-2 py-1 text-xs">
+                                <?php echo $cart_count; ?>
                             </span>
                         <?php endif; ?>
                     </a>
@@ -77,19 +107,19 @@ $pageTitle = htmlspecialchars($website['title']) . " - " . $site_name;
     </div>
 
     <!-- Product Details -->
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-12">
             <!-- Product Image -->
             <div class="space-y-4">
                 <div class="bg-white rounded-lg shadow-lg overflow-hidden">
-                    <img src="<?php echo htmlspecialchars($website['image_url']); ?>" alt="<?php echo htmlspecialchars($website['title']); ?>" class="w-full h-64 sm:h-80 lg:h-96 object-cover">
+                    <img src="<?php echo htmlspecialchars($website['image_url']); ?>" alt="<?php echo htmlspecialchars($website['title']); ?>" class="w-full h-96 object-cover">
                 </div>
                 
                 <!-- Screenshots Gallery -->
                 <?php if (!empty($website['screenshots'])): ?>
-                    <div class="bg-white rounded-lg shadow-lg p-4 sm:p-6">
+                    <div class="bg-white rounded-lg shadow-lg p-6">
                         <h3 class="text-lg font-semibold mb-4">Screenshots</h3>
-                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                             <?php 
                             $screenshots = json_decode($website['screenshots'] ?? '[]', true) ?: [];
                             foreach ($screenshots as $screenshot): 
@@ -117,9 +147,9 @@ $pageTitle = htmlspecialchars($website['title']) . " - " . $site_name;
             </div>
 
             <!-- Product Info -->
-            <div class="space-y-4 sm:space-y-6">
+            <div class="space-y-6">
                 <div>
-                    <div class="flex flex-wrap items-center gap-2 mb-3">
+                    <div class="flex items-center space-x-2 mb-2">
                         <span class="bg-indigo-100 text-indigo-800 px-3 py-1 rounded-full text-sm font-medium">
                             <?php echo htmlspecialchars($website['category']); ?>
                         </span>
@@ -127,22 +157,22 @@ $pageTitle = htmlspecialchars($website['title']) . " - " . $site_name;
                             <span class="bg-red-100 text-red-800 px-3 py-1 rounded-full text-sm font-medium">Featured</span>
                         <?php endif; ?>
                     </div>
-                    <h1 class="text-2xl sm:text-3xl font-bold text-gray-900 mb-4"><?php echo htmlspecialchars($website['title']); ?></h1>
-                    <div class="flex flex-col sm:flex-row sm:items-center sm:space-x-4 mb-6 space-y-2 sm:space-y-0">
-                        <span class="text-3xl sm:text-4xl font-bold text-indigo-600"><?php echo formatPrice($website['price']); ?></span>
+                    <h1 class="text-3xl font-bold text-gray-900 mb-4"><?php echo htmlspecialchars($website['title']); ?></h1>
+                    <div class="flex items-center space-x-4 mb-6">
+                        <span class="text-4xl font-bold text-indigo-600"><?php echo formatPrice($website['price']); ?></span>
                         <span class="text-gray-500">One-time payment</span>
                     </div>
                 </div>
 
                 <div>
                     <h3 class="text-lg font-semibold mb-3">Description</h3>
-                    <p class="text-gray-600 leading-relaxed text-sm sm:text-base"><?php echo nl2br(htmlspecialchars($website['description'])); ?></p>
+                    <p class="text-gray-600 leading-relaxed"><?php echo nl2br(htmlspecialchars($website['description'])); ?></p>
                 </div>
 
                 <?php if ($website['features']): ?>
                     <div>
                         <h3 class="text-lg font-semibold mb-3">Features</h3>
-                        <div class="bg-gray-50 rounded-lg p-3 sm:p-4">
+                        <div class="bg-gray-50 rounded-lg p-4">
                             <?php 
                             $features = explode(',', $website['features']);
                             foreach ($features as $feature): ?>
@@ -171,21 +201,21 @@ $pageTitle = htmlspecialchars($website['title']) . " - " . $site_name;
                 <?php endif; ?>
 
                 <!-- Add to Cart Form -->
-                <div class="border-t pt-4 sm:pt-6">
+                <div class="border-t pt-6">
                     <form action="add_to_cart.php" method="POST" class="space-y-4">
                         <input type="hidden" name="website_id" value="<?php echo $website['id']; ?>">
-                        <div class="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-4">
-                            <button type="submit" class="flex-1 bg-indigo-600 text-white px-4 sm:px-6 py-3 rounded-lg font-semibold hover:bg-indigo-700 transition text-sm sm:text-base">
+                        <div class="flex space-x-4">
+                            <button type="submit" class="flex-1 bg-indigo-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-indigo-700 transition">
                                 <i class="fas fa-shopping-cart mr-2"></i>
                                 Add to Cart
                             </button>
                             <?php if ($enable_wishlist === '1'): ?>
-                            <button type="button" onclick="addToWishlist(<?php echo $website['id']; ?>)" class="flex-1 bg-pink-600 text-white px-4 sm:px-6 py-3 rounded-lg font-semibold hover:bg-pink-700 transition text-sm sm:text-base">
+                            <button type="button" onclick="addToWishlist(<?php echo $website['id']; ?>)" class="flex-1 bg-pink-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-pink-700 transition">
                                 <i class="fas fa-heart mr-2"></i>
                                 Add to Wishlist
                             </button>
                             <?php endif; ?>
-                            <a href="index.php" class="flex-1 bg-gray-200 text-gray-800 px-4 sm:px-6 py-3 rounded-lg font-semibold text-center hover:bg-gray-300 transition text-sm sm:text-base">
+                            <a href="index.php" class="flex-1 bg-gray-200 text-gray-800 px-6 py-3 rounded-lg font-semibold text-center hover:bg-gray-300 transition">
                                 Continue Shopping
                             </a>
                         </div>
@@ -344,6 +374,12 @@ $pageTitle = htmlspecialchars($website['title']) . " - " . $site_name;
             if (e.key === 'Escape') {
                 closeScreenshotModal();
             }
+        });
+        
+        // Mobile menu toggle
+        document.getElementById('mobile-menu-button').addEventListener('click', function() {
+            const mobileMenu = document.getElementById('mobile-menu');
+            mobileMenu.classList.toggle('hidden');
         });
     </script>
 </body>

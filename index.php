@@ -50,9 +50,12 @@ $pageTitle = $seo_title . " - " . $site_name;
                     <a href="contact.php" class="text-gray-700 hover:text-indigo-600 px-3 py-2 rounded-md text-sm font-medium">Contact</a>
                     <a href="cart.php" class="relative text-gray-700 hover:text-indigo-600 px-3 py-2 rounded-md text-sm font-medium">
                         <i class="fas fa-shopping-cart"></i>
-                        <?php if (isset($_SESSION['cart']) && count($_SESSION['cart']) > 0): ?>
+                        <?php 
+                        $cart_count = getCartCount();
+                        if ($cart_count > 0): 
+                        ?>
                             <span class="absolute -top-1 -right-1 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs">
-                                <?php echo count($_SESSION['cart']); ?>
+                                <?php echo $cart_count; ?>
                             </span>
                         <?php endif; ?>
                     </a>
@@ -61,39 +64,43 @@ $pageTitle = $seo_title . " - " . $site_name;
                 
                 <!-- Mobile menu button -->
                 <div class="md:hidden flex items-center">
-                    <a href="cart.php" class="relative text-gray-700 hover:text-indigo-600 px-3 py-2 rounded-md text-sm font-medium mr-2">
-                        <i class="fas fa-shopping-cart"></i>
-                        <?php if (isset($_SESSION['cart']) && count($_SESSION['cart']) > 0): ?>
-                            <span class="absolute -top-1 -right-1 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs">
-                                <?php echo count($_SESSION['cart']); ?>
-                            </span>
-                        <?php endif; ?>
-                    </a>
-                    <button onclick="toggleMobileMenu()" class="text-gray-700 hover:text-indigo-600 p-2 rounded-md">
+                    <button id="mobile-menu-button" class="text-gray-700 hover:text-indigo-600 focus:outline-none focus:text-indigo-600">
                         <i class="fas fa-bars text-xl"></i>
                     </button>
                 </div>
             </div>
             
             <!-- Mobile Navigation -->
-            <div id="mobileMenu" class="hidden md:hidden pb-4">
+            <div id="mobile-menu" class="hidden md:hidden pb-4">
                 <div class="flex flex-col space-y-2">
                     <a href="index.php" class="text-gray-700 hover:text-indigo-600 px-3 py-2 rounded-md text-sm font-medium">Home</a>
                     <a href="contact.php" class="text-gray-700 hover:text-indigo-600 px-3 py-2 rounded-md text-sm font-medium">Contact</a>
-                    <a href="admin/login.php" class="bg-indigo-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-indigo-700 text-center">Admin</a>
+                    <a href="cart.php" class="relative text-gray-700 hover:text-indigo-600 px-3 py-2 rounded-md text-sm font-medium">
+                        <i class="fas fa-shopping-cart mr-2"></i>
+                        Cart
+                        <?php 
+                        $cart_count = getCartCount();
+                        if ($cart_count > 0): 
+                        ?>
+                            <span class="ml-2 bg-red-500 text-white rounded-full px-2 py-1 text-xs">
+                                <?php echo $cart_count; ?>
+                            </span>
+                        <?php endif; ?>
+                    </a>
+                    <a href="admin/login.php" class="bg-indigo-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-indigo-700 inline-block text-center">Admin</a>
                 </div>
             </div>
         </div>
     </nav>
 
     <!-- Hero Section -->
-    <section class="bg-gradient-to-r from-indigo-600 to-purple-600 text-white py-12 sm:py-20">
+    <section class="bg-gradient-to-r from-indigo-600 to-purple-600 text-white py-20">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-            <h2 class="text-3xl sm:text-4xl md:text-5xl font-bold mb-4">Premium Websites for Sale</h2>
-            <p class="text-lg sm:text-xl mb-6 sm:mb-8 px-4">Choose from our collection of professionally designed websites</p>
-            <div class="flex flex-col sm:flex-row justify-center space-y-4 sm:space-y-0 sm:space-x-4 px-4">
-                <a href="#websites" class="bg-white text-indigo-600 px-6 sm:px-8 py-3 rounded-lg font-semibold hover:bg-gray-100 transition text-center">Browse Websites</a>
-                <a href="cart.php" class="border-2 border-white text-white px-6 sm:px-8 py-3 rounded-lg font-semibold hover:bg-white hover:text-indigo-600 transition text-center">View Cart</a>
+            <h2 class="text-4xl md:text-5xl font-bold mb-4">Premium Websites for Sale</h2>
+            <p class="text-xl mb-8">Choose from our collection of professionally designed websites</p>
+            <div class="flex justify-center space-x-4">
+                <a href="#websites" class="bg-white text-indigo-600 px-8 py-3 rounded-lg font-semibold hover:bg-gray-100 transition">Browse Websites</a>
+                <a href="cart.php" class="border-2 border-white text-white px-8 py-3 rounded-lg font-semibold hover:bg-white hover:text-indigo-600 transition">View Cart</a>
             </div>
         </div>
     </section>
@@ -108,30 +115,30 @@ $pageTitle = $seo_title . " - " . $site_name;
                     <p class="text-gray-500 text-lg">No websites available at the moment.</p>
                 </div>
             <?php else: ?>
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                     <?php foreach ($websites as $website): ?>
-                        <div class="bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition transform hover:scale-105 duration-200">
+                        <div class="bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition">
                             <div class="relative">
-                                <img src="<?php echo htmlspecialchars($website['image_url']); ?>" alt="<?php echo htmlspecialchars($website['title']); ?>" class="w-full h-48 sm:h-52 object-cover">
+                                <img src="<?php echo htmlspecialchars($website['image_url']); ?>" alt="<?php echo htmlspecialchars($website['title']); ?>" class="w-full h-48 object-cover">
                                 <?php if ($website['featured']): ?>
-                                    <span class="absolute top-2 right-2 sm:top-4 sm:right-4 bg-red-500 text-white px-2 py-1 sm:px-3 sm:py-1 rounded-full text-xs sm:text-sm font-semibold">Featured</span>
+                                    <span class="absolute top-4 right-4 bg-red-500 text-white px-3 py-1 rounded-full text-sm font-semibold">Featured</span>
                                 <?php endif; ?>
                             </div>
-                            <div class="p-4 sm:p-6">
-                                <h4 class="text-lg sm:text-xl font-bold mb-2"><?php echo htmlspecialchars($website['title']); ?></h4>
-                                <p class="text-gray-600 mb-4 text-sm sm:text-base line-clamp-3"><?php echo htmlspecialchars(substr($website['description'], 0, 100)); ?>...</p>
-                                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 space-y-2 sm:space-y-0">
-                                    <span class="text-xl sm:text-2xl font-bold text-indigo-600">$<?php echo number_format($website['price'], 2); ?></span>
-                                    <span class="text-xs sm:text-sm text-gray-500">
+                            <div class="p-6">
+                                <h4 class="text-xl font-bold mb-2"><?php echo htmlspecialchars($website['title']); ?></h4>
+                                <p class="text-gray-600 mb-4"><?php echo htmlspecialchars(substr($website['description'], 0, 100)); ?>...</p>
+                                <div class="flex items-center justify-between mb-4">
+                                    <span class="text-2xl font-bold text-indigo-600">$<?php echo number_format($website['price'], 2); ?></span>
+                                    <span class="text-sm text-gray-500">
                                         <i class="fas fa-tag"></i> <?php echo htmlspecialchars($website['category']); ?>
                                     </span>
                                 </div>
-                                <div class="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2">
-                                    <a href="website.php?id=<?php echo $website['id']; ?>" class="flex-1 bg-gray-200 text-gray-800 px-3 py-2 sm:px-4 sm:py-2 rounded-lg text-center hover:bg-gray-300 transition text-sm sm:text-base">View Details</a>
+                                <div class="flex space-x-2">
+                                    <a href="website.php?id=<?php echo $website['id']; ?>" class="flex-1 bg-gray-200 text-gray-800 px-4 py-2 rounded-lg text-center hover:bg-gray-300 transition">View Details</a>
                                     <form action="add_to_cart.php" method="POST" class="flex-1">
                                         <input type="hidden" name="website_id" value="<?php echo $website['id']; ?>">
-                                        <button type="submit" class="w-full bg-indigo-600 text-white px-3 py-2 sm:px-4 sm:py-2 rounded-lg hover:bg-indigo-700 transition text-sm sm:text-base">
-                                            <i class="fas fa-shopping-cart mr-1 sm:mr-2"></i><span class="hidden sm:inline">Add to Cart</span><span class="sm:hidden">Cart</span>
+                                        <button type="submit" class="w-full bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition">
+                                            <i class="fas fa-shopping-cart mr-2"></i>Add to Cart
                                         </button>
                                     </form>
                                 </div>
@@ -172,21 +179,12 @@ $pageTitle = $seo_title . " - " . $site_name;
             </div>
         </div>
     </footer>
-    
+
     <script>
-        function toggleMobileMenu() {
-            const menu = document.getElementById('mobileMenu');
-            menu.classList.toggle('hidden');
-        }
-        
-        // Close mobile menu when clicking outside
-        document.addEventListener('click', function(event) {
-            const menu = document.getElementById('mobileMenu');
-            const menuButton = event.target.closest('button');
-            
-            if (!menu.contains(event.target) && (!menuButton || !menuButton.onclick)) {
-                menu.classList.add('hidden');
-            }
+        // Mobile menu toggle
+        document.getElementById('mobile-menu-button').addEventListener('click', function() {
+            const mobileMenu = document.getElementById('mobile-menu');
+            mobileMenu.classList.toggle('hidden');
         });
     </script>
 </body>

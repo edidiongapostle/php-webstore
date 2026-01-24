@@ -1,7 +1,4 @@
 <?php
-// Define admin section to optimize loading
-define('ADMIN_SECTION', true);
-
 session_start();
 require_once '../config.php';
 require_once '../functions.php';
@@ -12,30 +9,14 @@ if (!isset($_SESSION['admin_logged_in']) || !$_SESSION['admin_logged_in']) {
     exit;
 }
 
-// Get statistics with optimized queries
+// Get statistics
 $total_websites = $conn->query("SELECT COUNT(*) as count FROM websites")->fetch()['count'];
+$total_orders = $conn->query("SELECT COUNT(*) as count FROM orders")->fetch()['count'];
+$total_revenue = $conn->query("SELECT SUM(total_amount) as total FROM orders WHERE status = 'completed'")->fetch()['total'] ?? 0;
+$pending_orders = $conn->query("SELECT COUNT(*) as count FROM orders WHERE status = 'pending'")->fetch()['count'];
 
-$stats = $conn->query("
-    SELECT 
-        COUNT(*) as total_orders,
-        COUNT(CASE WHEN status = 'pending' THEN 1 END) as pending_orders,
-        COALESCE(SUM(CASE WHEN status = 'completed' THEN total_amount ELSE 0 END), 0) as total_revenue
-    FROM orders
-")->fetch();
-
-$total_orders = $stats['total_orders'];
-$total_revenue = $stats['total_revenue'];
-$pending_orders = $stats['pending_orders'];
-
-// Get recent orders with optimized query
-$recent_orders = $conn->query("
-    SELECT o.*, COUNT(oi.id) as item_count 
-    FROM orders o 
-    LEFT JOIN order_items oi ON o.id = oi.order_id 
-    GROUP BY o.id 
-    ORDER BY o.created_at DESC 
-    LIMIT 5
-")->fetchAll();
+// Get recent orders
+$recent_orders = $conn->query("SELECT o.*, COUNT(oi.id) as item_count FROM orders o LEFT JOIN order_items oi ON o.id = oi.order_id GROUP BY o.id ORDER BY o.created_at DESC LIMIT 5")->fetchAll();
 
 // Get recent websites
 $recent_websites = $conn->query("SELECT * FROM websites ORDER BY created_at DESC LIMIT 5")->fetchAll();
@@ -80,10 +61,6 @@ $recent_websites = $conn->query("SELECT * FROM websites ORDER BY created_at DESC
                 <a href="websites.php" class="block px-4 py-3 text-gray-700 hover:bg-gray-50">
                     <i class="fas fa-globe mr-3"></i>
                     Websites
-                </a>
-                <a href="categories.php" class="block px-4 py-3 text-gray-700 hover:bg-gray-50">
-                    <i class="fas fa-tags mr-3"></i>
-                    Categories
                 </a>
                 <a href="orders.php" class="block px-4 py-3 text-gray-700 hover:bg-gray-50">
                     <i class="fas fa-shopping-cart mr-3"></i>

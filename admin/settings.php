@@ -1,7 +1,4 @@
 <?php
-// Define admin section to optimize loading
-define('ADMIN_SECTION', true);
-
 session_start();
 require_once '../config.php';
 require_once '../functions.php';
@@ -219,10 +216,6 @@ $pageTitle = "Settings - WebStore Admin";
                     <i class="fas fa-globe mr-3"></i>
                     Websites
                 </a>
-                <a href="categories.php" class="block px-4 py-3 text-gray-700 hover:bg-gray-50">
-                    <i class="fas fa-tags mr-3"></i>
-                    Categories
-                </a>
                 <a href="orders.php" class="block px-4 py-3 text-gray-700 hover:bg-gray-50">
                     <i class="fas fa-shopping-cart mr-3"></i>
                     Orders
@@ -424,7 +417,7 @@ $pageTitle = "Settings - WebStore Admin";
                                             <label class="block text-sm font-medium text-gray-700 mb-2">Bitcoin QR Code</label>
                                             <?php if (!empty($config['btc_qr_code'])): ?>
                                                 <div class="mb-2">
-                                                    <img src="<?php echo htmlspecialchars($config['btc_qr_code']); ?>" alt="Bitcoin QR Code" class="h-20 w-20 border rounded">
+                                                    <img src="../<?php echo htmlspecialchars($config['btc_qr_code']); ?>" alt="Bitcoin QR Code" class="h-20 w-20 border rounded">
                                                     <br>
                                                     <label class="flex items-center mt-2">
                                                         <input type="checkbox" name="remove_btc_qr" value="1" class="h-4 w-4 text-red-600 focus:ring-red-500 border-gray-300 rounded">
@@ -447,7 +440,7 @@ $pageTitle = "Settings - WebStore Admin";
                                             <label class="block text-sm font-medium text-gray-700 mb-2">Ethereum QR Code</label>
                                             <?php if (!empty($config['eth_qr_code'])): ?>
                                                 <div class="mb-2">
-                                                    <img src="<?php echo htmlspecialchars($config['eth_qr_code']); ?>" alt="Ethereum QR Code" class="h-20 w-20 border rounded">
+                                                    <img src="../<?php echo htmlspecialchars($config['eth_qr_code']); ?>" alt="Ethereum QR Code" class="h-20 w-20 border rounded">
                                                     <br>
                                                     <label class="flex items-center mt-2">
                                                         <input type="checkbox" name="remove_eth_qr" value="1" class="h-4 w-4 text-red-600 focus:ring-red-500 border-gray-300 rounded">
@@ -470,7 +463,7 @@ $pageTitle = "Settings - WebStore Admin";
                                             <label class="block text-sm font-medium text-gray-700 mb-2">Litecoin QR Code</label>
                                             <?php if (!empty($config['ltc_qr_code'])): ?>
                                                 <div class="mb-2">
-                                                    <img src="<?php echo htmlspecialchars($config['ltc_qr_code']); ?>" alt="Litecoin QR Code" class="h-20 w-20 border rounded">
+                                                    <img src="../<?php echo htmlspecialchars($config['ltc_qr_code']); ?>" alt="Litecoin QR Code" class="h-20 w-20 border rounded">
                                                     <br>
                                                     <label class="flex items-center mt-2">
                                                         <input type="checkbox" name="remove_ltc_qr" value="1" class="h-4 w-4 text-red-600 focus:ring-red-500 border-gray-300 rounded">

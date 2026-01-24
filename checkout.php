@@ -30,6 +30,23 @@ $success = false;
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Basic validation - payment details will be validated in payment.php
     $payment_method = sanitizeInput($_POST['payment_method'] ?? '');
+    $anonymous_checkout = isset($_POST['anonymous_checkout']) ? $_POST['anonymous_checkout'] : '0';
+    
+    // Validate billing information if not anonymous checkout
+    if ($anonymous_checkout !== '1') {
+        $name = sanitizeInput($_POST['name'] ?? '');
+        $email = sanitizeInput($_POST['email'] ?? '');
+        
+        if (empty($name)) {
+            $errors['name'] = 'Full name is required';
+        }
+        
+        if (empty($email)) {
+            $errors['email'] = 'Email address is required';
+        } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            $errors['email'] = 'Please enter a valid email address';
+        }
+    }
     
     if (empty($payment_method)) {
         $errors['payment_method'] = 'Payment method is required';
@@ -85,69 +102,76 @@ $pageTitle = "Checkout - WebStore";
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between h-16">
                 <div class="flex items-center">
-                    <h1 class="text-xl sm:text-2xl font-bold text-indigo-600"><?php echo htmlspecialchars($site_name); ?></h1>
+                    <h1 class="text-2xl font-bold text-indigo-600"><?php echo htmlspecialchars($site_name); ?></h1>
                 </div>
-                
-                <!-- Desktop Navigation -->
-                <div class="hidden md:flex items-center space-x-4">
-                    <a href="index.php" class="text-gray-700 hover:text-indigo-600 px-3 py-2 rounded-md text-sm font-medium">Home</a>
-                    <a href="cart.php" class="relative text-gray-700 hover:text-indigo-600 px-3 py-2 rounded-md text-sm font-medium">
+                <div class="flex items-center space-x-4">
+                    <a href="index.php" class="text-gray-700 hover:text-indigo-600 px-3 py-2 rounded-md text-sm font-medium hidden md:block">Home</a>
+                    <a href="cart.php" class="relative text-gray-700 hover:text-indigo-600 px-3 py-2 rounded-md text-sm font-medium hidden md:block">
                         <i class="fas fa-shopping-cart"></i>
-                        <?php if (isset($_SESSION['cart']) && count($_SESSION['cart']) > 0): ?>
+                        <?php 
+                        $cart_count = getCartCount();
+                        if ($cart_count > 0): 
+                        ?>
                             <span class="absolute -top-1 -right-1 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs">
-                                <?php echo count($_SESSION['cart']); ?>
+                                <?php echo $cart_count; ?>
                             </span>
                         <?php endif; ?>
                     </a>
+                    <a href="admin/login.php" class="bg-indigo-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-indigo-700 hidden md:block">Admin</a>
                 </div>
                 
                 <!-- Mobile menu button -->
                 <div class="md:hidden flex items-center">
-                    <a href="cart.php" class="relative text-gray-700 hover:text-indigo-600 px-3 py-2 rounded-md text-sm font-medium mr-2">
-                        <i class="fas fa-shopping-cart"></i>
-                        <?php if (isset($_SESSION['cart']) && count($_SESSION['cart']) > 0): ?>
-                            <span class="absolute -top-1 -right-1 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs">
-                                <?php echo count($_SESSION['cart']); ?>
-                            </span>
-                        <?php endif; ?>
-                    </a>
-                    <button onclick="toggleMobileMenu()" class="text-gray-700 hover:text-indigo-600 p-2 rounded-md">
+                    <button id="mobile-menu-button" class="text-gray-700 hover:text-indigo-600 focus:outline-none focus:text-indigo-600">
                         <i class="fas fa-bars text-xl"></i>
                     </button>
                 </div>
             </div>
             
             <!-- Mobile Navigation -->
-            <div id="mobileMenu" class="hidden md:hidden pb-4">
+            <div id="mobile-menu" class="hidden md:hidden pb-4">
                 <div class="flex flex-col space-y-2">
                     <a href="index.php" class="text-gray-700 hover:text-indigo-600 px-3 py-2 rounded-md text-sm font-medium">Home</a>
+                    <a href="cart.php" class="relative text-gray-700 hover:text-indigo-600 px-3 py-2 rounded-md text-sm font-medium">
+                        <i class="fas fa-shopping-cart mr-2"></i>
+                        Cart
+                        <?php 
+                        $cart_count = getCartCount();
+                        if ($cart_count > 0): 
+                        ?>
+                            <span class="ml-2 bg-red-500 text-white rounded-full px-2 py-1 text-xs">
+                                <?php echo $cart_count; ?>
+                            </span>
+                        <?php endif; ?>
+                    </a>
+                    <a href="admin/login.php" class="bg-indigo-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-indigo-700">Admin</a>
                 </div>
             </div>
         </div>
     </nav>
 
     <!-- Checkout Content -->
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
-        <h2 class="text-2xl sm:text-3xl font-bold mb-6 sm:mb-8">Checkout</h2>
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <h2 class="text-3xl font-bold mb-8">Checkout</h2>
 
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <!-- Checkout Form -->
             <div class="lg:col-span-2">
                 <form method="POST" action="payment.php" class="space-y-6">
                     <!-- Billing Information -->
-                    <div class="bg-white rounded-lg shadow-lg p-4 sm:p-6">
-                        <h3 class="text-lg sm:text-xl font-semibold mb-4">Billing Information</h3>
+                    <div class="bg-white rounded-lg shadow-lg p-6">
+                        <h3 class="text-xl font-semibold mb-4">Billing Information</h3>
                         
                         <!-- Anonymous Checkout Option -->
                         <?php if ($anonymous_checkout_enabled === '1'): ?>
-                            <div class="mb-6">
-                                <label class="flex items-center">
-                                    <input type="checkbox" name="anonymous_checkout" value="1" 
-                                           class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded">
-                                    <span class="ml-2 text-sm text-gray-700">Checkout as Guest</span>
-                                </label>
-                                <p class="text-xs text-gray-500 mt-1">No account required - quick and easy checkout</p>
-                            </div>
+                        <div class="mb-6">
+                            <label class="flex items-center">
+                                <input type="checkbox" name="anonymous_checkout" value="1" class="mr-2 h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+                                       onchange="toggleAnonymousFields(this.checked)">
+                                <span class="text-sm font-medium text-gray-700">Checkout Anonymously</span>
+                            </label>
+                            <p class="text-sm text-gray-500 mt-1">Check this to skip personal information fields</p>
+                        </div>
                         <?php endif; ?>
                         
                         <div id="billing-fields">
@@ -362,21 +386,91 @@ $pageTitle = "Checkout - WebStore";
             <p class="mt-2 text-gray-400">Premium websites for your business needs</p>
         </div>
     </footer>
-    
+
     <script>
-        function toggleMobileMenu() {
-            const menu = document.getElementById('mobileMenu');
-            menu.classList.toggle('hidden');
+        function toggleAnonymousFields(isAnonymous) {
+            const billingFields = document.getElementById('billing-fields');
+            if (isAnonymous) {
+                billingFields.style.display = 'none';
+            } else {
+                billingFields.style.display = 'block';
+            }
+        }
+
+        // Form validation before submission
+        document.querySelector('form').addEventListener('submit', function(e) {
+            const anonymousCheckbox = document.querySelector('input[name="anonymous_checkout"]');
+            const isAnonymous = anonymousCheckbox ? anonymousCheckbox.checked : false;
+            
+            // Clear previous errors
+            const errorElements = document.querySelectorAll('.text-red-500');
+            errorElements.forEach(el => el.remove());
+            
+            let hasErrors = false;
+            
+            // Validate billing information if not anonymous
+            if (!isAnonymous) {
+                const nameField = document.querySelector('input[name="name"]');
+                const emailField = document.querySelector('input[name="email"]');
+                
+                if (!nameField.value.trim()) {
+                    showError(nameField, 'Full name is required');
+                    hasErrors = true;
+                }
+                
+                if (!emailField.value.trim()) {
+                    showError(emailField, 'Email address is required');
+                    hasErrors = true;
+                } else if (!validateEmail(emailField.value)) {
+                    showError(emailField, 'Please enter a valid email address');
+                    hasErrors = true;
+                }
+            }
+            
+            // Validate payment method
+            const paymentMethod = document.querySelector('input[name="payment_method"]:checked');
+            if (!paymentMethod) {
+                const paymentSection = document.querySelector('input[name="payment_method"]').closest('.bg-white');
+                showError(paymentSection.querySelector('h3'), 'Please select a payment method');
+                hasErrors = true;
+            }
+            
+            // Validate terms acceptance
+            const termsCheckbox = document.querySelector('input[name="accept_terms"]');
+            if (!termsCheckbox.checked) {
+                showError(termsCheckbox.closest('label'), 'You must accept the Terms of Use to complete your purchase');
+                hasErrors = true;
+            }
+            
+            if (hasErrors) {
+                e.preventDefault();
+                // Scroll to first error
+                const firstError = document.querySelector('.text-red-500');
+                if (firstError) {
+                    firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+            }
+        });
+        
+        function showError(element, message) {
+            const errorDiv = document.createElement('p');
+            errorDiv.className = 'text-red-500 text-sm mt-2';
+            errorDiv.innerHTML = '<i class="fas fa-exclamation-triangle mr-1"></i>' + message;
+            
+            // Insert error after the element or its parent
+            const targetElement = element.closest('div') || element.parentElement;
+            targetElement.appendChild(errorDiv);
         }
         
-        // Close mobile menu when clicking outside
-        document.addEventListener('click', function(event) {
-            const menu = document.getElementById('mobileMenu');
-            const menuButton = event.target.closest('button');
-            
-            if (!menu.contains(event.target) && (!menuButton || !menuButton.onclick)) {
-                menu.classList.add('hidden');
-            }
+        function validateEmail(email) {
+            const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            return re.test(email);
+        }
+        
+        // Mobile menu toggle
+        document.getElementById('mobile-menu-button').addEventListener('click', function() {
+            const mobileMenu = document.getElementById('mobile-menu');
+            mobileMenu.classList.toggle('hidden');
         });
     </script>
 </body>

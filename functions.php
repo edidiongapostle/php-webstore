@@ -5,8 +5,7 @@ function getSetting($key, $default = null) {
     global $conn;
     static $settings = null;
     
-    // Only load settings if actually needed (not on admin pages)
-    if ($settings === null && !defined('ADMIN_SECTION')) {
+    if ($settings === null) {
         $settings = [];
         try {
             $stmt = $conn->query("SELECT setting_key, setting_value FROM settings");
@@ -26,8 +25,7 @@ function getPaymentMethods() {
     global $conn;
     static $payment_methods = null;
     
-    // Only load payment methods if actually needed (not on admin pages)
-    if ($payment_methods === null && !defined('ADMIN_SECTION')) {
+    if ($payment_methods === null) {
         $payment_methods = [];
         try {
             $stmt = $conn->query("SELECT * FROM payment_methods WHERE enabled = 1 ORDER BY sort_order");
@@ -85,16 +83,26 @@ function getCartItems() {
     }
     
     $items = [];
+    $valid_cart = [];
     global $conn;
     
     foreach ($_SESSION['cart'] as $website_id) {
         $website = getWebsiteById($website_id);
         if ($website) {
             $items[] = $website;
+            $valid_cart[] = $website_id;
         }
     }
     
+    // Update cart session to remove invalid items
+    $_SESSION['cart'] = $valid_cart;
+    
     return $items;
+}
+
+function getCartCount() {
+    $items = getCartItems();
+    return count($items);
 }
 
 function getCartTotal() {
@@ -150,24 +158,5 @@ function validateEmail($email) {
 
 function formatPrice($price) {
     return CURRENCY . ' ' . number_format($price, 2);
-}
-
-function getImageUrl($image_path) {
-    if (empty($image_path)) {
-        return 'https://via.placeholder.com/400x300/cccccc/666666?text=No+Image';
-    }
-    
-    // If it's already a full URL (starts with http), return as is
-    if (strpos($image_path, 'http') === 0) {
-        return $image_path;
-    }
-    
-    // For relative paths, make sure they start with the correct base path
-    if (strpos($image_path, 'uploads/') === 0) {
-        return $image_path;
-    }
-    
-    // If it's a relative path without uploads/, add it
-    return 'uploads/' . ltrim($image_path, '/');
 }
 ?>

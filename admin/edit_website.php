@@ -1,7 +1,4 @@
 <?php
-// Define admin section to optimize loading
-define('ADMIN_SECTION', true);
-
 session_start();
 require_once '../config.php';
 require_once '../functions.php';
@@ -11,9 +8,6 @@ if (!isset($_SESSION['admin_logged_in']) || !$_SESSION['admin_logged_in']) {
     header('Location: login.php');
     exit;
 }
-
-// Get categories from database
-$categories = $conn->query("SELECT * FROM categories ORDER BY name ASC")->fetchAll();
 
 // Get website ID from URL
 $website_id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
@@ -42,48 +36,38 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $description = sanitizeInput($_POST['description'] ?? '');
     $price = floatval($_POST['price'] ?? 0);
     $category = sanitizeInput($_POST['category'] ?? '');
-    $image_url = sanitizeInput($_POST['image_url'] ?? '');
     $demo_url = sanitizeInput($_POST['demo_url'] ?? '');
     $features = sanitizeInput($_POST['features'] ?? '');
     $technologies = sanitizeInput($_POST['technologies'] ?? '');
     $featured = isset($_POST['featured']) ? 1 : 0;
     $status = sanitizeInput($_POST['status'] ?? 'active');
-    $image_source = sanitizeInput($_POST['image_source'] ?? 'url');
-    $screenshot_source = sanitizeInput($_POST['screenshot_source'] ?? 'upload');
     
-    // Handle main image
-    if ($image_source === 'url') {
-        $image_url = sanitizeInput($_POST['image_url'] ?? '');
-        if (empty($image_url)) {
-            $errors['image_url'] = 'Image URL is required when using URL option';
+    // Handle main image upload
+    $image_url = $website['image_url']; // Keep existing image by default
+    if (isset($_FILES['main_image']) && $_FILES['main_image']['error'] == UPLOAD_ERR_OK) {
+        $upload_dir = __DIR__ . '/../uploads/images/';
+        if (!file_exists($upload_dir)) {
+            mkdir($upload_dir, 0755, true);
         }
-    } else {
-        // Handle main image upload (optional for edit)
-        if (isset($_FILES['main_image']) && $_FILES['main_image']['error'] == UPLOAD_ERR_OK) {
-            $file = $_FILES['main_image'];
-            if ($file['size'] <= 5 * 1024 * 1024) { // 5MB limit
-                $extension = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
-                if (in_array($extension, ['png', 'jpg', 'jpeg', 'gif'])) {
-                    $upload_dir = __DIR__ . '/../uploads/images/';
-                    if (!file_exists($upload_dir)) {
-                        mkdir($upload_dir, 0755, true);
-                    }
-                    $filename = 'main_' . time() . '.' . $extension;
-                    $filepath = $upload_dir . $filename;
-                    if (move_uploaded_file($file['tmp_name'], $filepath)) {
-                        $image_url = 'uploads/images/' . $filename;
-                    } else {
-                        $errors['main_image'] = 'Failed to upload main image';
-                    }
-                } else {
-                    $errors['main_image'] = 'Invalid file type. Only PNG, JPG, GIF allowed';
-                }
-            } else {
-                $errors['main_image'] = 'File too large. Maximum size is 5MB';
+        
+        // Delete old image if exists
+        if (!empty($website['image_url'])) {
+            $old_image_path = __DIR__ . '/../' . $website['image_url'];
+            if (file_exists($old_image_path)) {
+                unlink($old_image_path);
             }
-        } else {
-            // Keep existing image if no new upload
-            $image_url = $website['image_url'];
+        }
+        
+        $file = $_FILES['main_image'];
+        if ($file['size'] <= 5 * 1024 * 1024) { // 5MB limit
+            $extension = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
+            if (in_array($extension, ['png', 'jpg', 'jpeg', 'gif'])) {
+                $filename = 'main_' . time() . '.' . $extension;
+                $filepath = $upload_dir . $filename;
+                if (move_uploaded_file($file['tmp_name'], $filepath)) {
+                    $image_url = 'uploads/images/' . $filename;
+                }
+            }
         }
     }
     
@@ -94,9 +78,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (isset($_POST['remove_screenshots']) && is_array($_POST['remove_screenshots'])) {
         foreach ($_POST['remove_screenshots'] as $index) {
             if (isset($existing_screenshots[$index])) {
-                // Delete file from server (only if it's an uploaded file)
+                // Delete file from server
                 $file_path = __DIR__ . '/../' . $existing_screenshots[$index];
-                if (file_exists($file_path) && strpos($existing_screenshots[$index], 'uploads/') === 0) {
+                if (file_exists($file_path)) {
                     unlink($file_path);
                 }
                 unset($existing_screenshots[$index]);
@@ -106,42 +90,30 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $existing_screenshots = array_values($existing_screenshots);
     }
     
-    // Handle new screenshots
-    if ($screenshot_source === 'url') {
-        // Handle screenshot URLs
-        if (isset($_POST['screenshot_urls']) && is_array($_POST['screenshot_urls'])) {
-            foreach ($_POST['screenshot_urls'] as $url) {
-                $url = trim($url);
-                if (!empty($url)) {
-                    if (filter_var($url, FILTER_VALIDATE_URL)) {
-                        $existing_screenshots[] = $url;
-                    } else {
-                        $errors['screenshot_urls'] = 'Invalid screenshot URL: ' . $url;
-                    }
-                }
-            }
+    // Handle new screenshot uploads
+    if (isset($_FILES['screenshots']) && is_array($_FILES['screenshots']['name'])) {
+        $upload_dir = __DIR__ . '/../uploads/screenshots/';
+        if (!file_exists($upload_dir)) {
+            mkdir($upload_dir, 0755, true);
         }
-    } else {
-        // Handle screenshot uploads
-        if (isset($_FILES['screenshots']) && is_array($_FILES['screenshots']['name'])) {
-            $upload_dir = __DIR__ . '/../uploads/screenshots/';
-            if (!file_exists($upload_dir)) {
-                mkdir($upload_dir, 0755, true);
-            }
-            
-            foreach ($_FILES['screenshots']['name'] as $key => $name) {
-                if (!empty($name) && $_FILES['screenshots']['error'][$key] == UPLOAD_ERR_OK) {
-                    $file_size = $_FILES['screenshots']['size'][$key];
-                    $file_tmp = $_FILES['screenshots']['tmp_name'][$key];
-                    
-                    if ($file_size <= 5 * 1024 * 1024) { // 5MB limit
-                        $extension = strtolower(pathinfo($name, PATHINFO_EXTENSION));
-                        if (in_array($extension, ['png', 'jpg', 'jpeg', 'gif'])) {
-                            $filename = 'screenshot_' . time() . '_' . $key . '.' . $extension;
-                            $filepath = $upload_dir . $filename;
-                            if (move_uploaded_file($file_tmp, $filepath)) {
-                                $existing_screenshots[] = 'uploads/screenshots/' . $filename;
-                            }
+        
+        foreach ($_FILES['screenshots']['name'] as $key => $name) {
+            if (!empty($name) && $_FILES['screenshots']['error'][$key] == 0) {
+                $file = [
+                    'name' => $name,
+                    'type' => $_FILES['screenshots']['type'][$key],
+                    'tmp_name' => $_FILES['screenshots']['tmp_name'][$key],
+                    'error' => $_FILES['screenshots']['error'][$key],
+                    'size' => $_FILES['screenshots']['size'][$key]
+                ];
+                
+                if ($file['size'] <= 5 * 1024 * 1024) { // 5MB limit
+                    $extension = pathinfo($file['name'], PATHINFO_EXTENSION);
+                    if (in_array(strtolower($extension), ['png', 'jpg', 'jpeg', 'gif'])) {
+                        $filename = 'screenshot_' . time() . '_' . $key . '.' . $extension;
+                        $filepath = $upload_dir . $filename;
+                        if (move_uploaded_file($file['tmp_name'], $filepath)) {
+                            $existing_screenshots[] = 'uploads/screenshots/' . $filename;
                         }
                     }
                 }
@@ -239,21 +211,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <i class="fas fa-globe mr-3"></i>
                     Websites
                 </a>
-                <a href="categories.php" class="block px-4 py-3 text-gray-700 hover:bg-gray-50">
-                    <i class="fas fa-tags mr-3"></i>
-                    Categories
-                </a>
-                <a href="orders.php" class="block px-4 py-3 text-gray-700 hover:bg-gray-50">
-                    <i class="fas fa-shopping-cart mr-3"></i>
-                    Orders
-                </a>
                 <a href="add_website.php" class="block px-4 py-3 text-gray-700 hover:bg-gray-50">
                     <i class="fas fa-plus mr-3"></i>
                     Add Website
                 </a>
+                <a href="categories.php" class="block px-4 py-3 text-gray-700 hover:bg-gray-50">
+                    <i class="fas fa-tags mr-3"></i>
+                    Categories
+                </a>
                 <a href="settings.php" class="block px-4 py-3 text-gray-700 hover:bg-gray-50">
                     <i class="fas fa-cog mr-3"></i>
                     Settings
+                </a>
+                <a href="orders.php" class="block px-4 py-3 text-gray-700 hover:bg-gray-50">
+                    <i class="fas fa-shopping-cart mr-3"></i>
+                    Orders
                 </a>
             </nav>
         </aside>
@@ -311,11 +283,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             <label class="block text-sm font-medium text-gray-700 mb-2">Category *</label>
                             <select name="category" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
                                 <option value="">Select a category</option>
-                                <?php foreach ($categories as $cat): ?>
-                                    <option value="<?php echo htmlspecialchars($cat['name']); ?>" <?php echo (($_POST['category'] ?? $website['category']) === $cat['name']) ? 'selected' : ''; ?>>
-                                        <?php echo htmlspecialchars($cat['name']); ?>
-                                    </option>
-                                <?php endforeach; ?>
+                                <?php 
+                                try {
+                                    $stmt = $conn->query("SELECT name FROM categories ORDER BY name ASC");
+                                    $categories = $stmt->fetchAll(PDO::FETCH_COLUMN);
+                                    foreach ($categories as $cat) {
+                                        $selected = (($_POST['category'] ?? $website['category']) === $cat) ? 'selected' : '';
+                                        echo '<option value="' . htmlspecialchars($cat) . '" ' . $selected . '>' . htmlspecialchars($cat) . '</option>';
+                                    }
+                                } catch (Exception $e) {
+                                    // Fallback to hardcoded categories if database fails
+                                    $fallback_categories = ['E-Commerce', 'Portfolio', 'Blog', 'Restaurant', 'Real Estate', 'Education', 'Business', 'Other'];
+                                    foreach ($fallback_categories as $cat) {
+                                        $selected = (($_POST['category'] ?? $website['category']) === $cat) ? 'selected' : '';
+                                        echo '<option value="' . htmlspecialchars($cat) . '" ' . $selected . '>' . htmlspecialchars($cat) . '</option>';
+                                    }
+                                }
+                                ?>
                             </select>
                             <?php if (isset($errors['category'])): ?>
                                 <p class="text-red-500 text-sm mt-1"><?php echo $errors['category']; ?></p>
@@ -352,47 +336,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     </div>
 
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <!-- Main Image -->
+                        <!-- Main Image Upload -->
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Main Image *</label>
-                            
-                            <!-- Image Source Selection -->
-                            <div class="mb-4">
-                                <label class="flex items-center mb-2">
-                                    <input type="radio" name="image_source" value="url" <?php echo (($_POST['image_source'] ?? 'url') === 'url') ? 'checked' : ''; ?> onchange="toggleImageInput('url')" class="mr-2">
-                                    <span class="text-sm">Use Image URL</span>
-                                </label>
-                                <label class="flex items-center">
-                                    <input type="radio" name="image_source" value="upload" <?php echo (($_POST['image_source'] ?? 'url') === 'upload') ? 'checked' : ''; ?> onchange="toggleImageInput('upload')" class="mr-2">
-                                    <span class="text-sm">Upload New Image</span>
-                                </label>
-                            </div>
-                            
-                            <!-- Current Image Display -->
-                            <div class="mb-4">
-                                <p class="text-sm text-gray-600 mb-2">Current Image:</p>
-                                <img src="<?php echo getImageUrl($website['image_url']); ?>" alt="Current main image" class="w-32 h-32 object-cover rounded border" onerror="this.src='https://via.placeholder.com/400x300/cccccc/666666?text=Error'">
-                            </div>
-                            
-                            <!-- URL Input -->
-                            <div id="imageUrlInput" <?php echo (($_POST['image_source'] ?? 'url') === 'upload') ? 'class="hidden"' : ''; ?>>
-                                <input type="url" name="image_url" value="<?php echo htmlspecialchars($_POST['image_url'] ?? $website['image_url']); ?>" 
-                                       class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                                       placeholder="https://example.com/image.jpg">
-                                <?php if (isset($errors['image_url'])): ?>
-                                    <p class="text-red-500 text-sm mt-1"><?php echo $errors['image_url']; ?></p>
-                                <?php endif; ?>
-                            </div>
-                            
-                            <!-- File Upload -->
-                            <div id="imageUploadInput" <?php echo (($_POST['image_source'] ?? 'url') === 'url') ? 'class="hidden"' : ''; ?>>
-                                <input type="file" name="main_image" accept="image/*" 
-                                       class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                                <p class="text-xs text-gray-500 mt-1">Upload a new main image (PNG, JPG, GIF - Max 5MB). Leave empty to keep current image.</p>
-                                <?php if (isset($errors['main_image'])): ?>
-                                    <p class="text-red-500 text-sm mt-1"><?php echo $errors['main_image']; ?></p>
-                                <?php endif; ?>
-                            </div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Main Image</label>
+                            <?php if (!empty($website['image_url'])): ?>
+                                <div class="mb-2">
+                                    <img src="../<?php echo htmlspecialchars($website['image_url']); ?>" alt="Current Main Image" class="h-20 w-20 object-cover rounded border">
+                                    <p class="text-xs text-gray-500 mt-1">Current image</p>
+                                </div>
+                            <?php endif; ?>
+                            <input type="file" name="main_image" accept="image/*" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                            <p class="text-sm text-gray-500 mt-1">Upload new main image (PNG, JPG, GIF - Max 5MB)</p>
                         </div>
 
                         <!-- Demo URL -->
@@ -426,18 +380,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">Screenshots</label>
                         
-                        <!-- Screenshot Source Selection -->
-                        <div class="mb-4">
-                            <label class="flex items-center mb-2">
-                                <input type="radio" name="screenshot_source" value="upload" <?php echo (($_POST['screenshot_source'] ?? 'upload') === 'upload') ? 'checked' : ''; ?> onchange="toggleScreenshotInput('upload')" class="mr-2">
-                                <span class="text-sm">Upload New Screenshots</span>
-                            </label>
-                            <label class="flex items-center">
-                                <input type="radio" name="screenshot_source" value="url" <?php echo (($_POST['screenshot_source'] ?? 'upload') === 'url') ? 'checked' : ''; ?> onchange="toggleScreenshotInput('url')" class="mr-2">
-                                <span class="text-sm">Add Screenshot URLs</span>
-                            </label>
-                        </div>
-                        
                         <!-- Show existing screenshots -->
                         <?php 
                         $existing_screenshots = json_decode($website['screenshots'] ?? '[]', true) ?: [];
@@ -447,7 +389,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                 <div class="grid grid-cols-3 gap-2">
                                     <?php foreach ($existing_screenshots as $index => $screenshot): ?>
                                         <div class="relative">
-                                            <img src="<?php echo getImageUrl($screenshot); ?>" alt="Screenshot <?php echo $index + 1; ?>" class="w-full h-20 object-cover rounded border" onerror="this.src='https://via.placeholder.com/400x300/cccccc/666666?text=Error'">
+                                            <?php 
+                                            $image_path = '../' . $screenshot;
+                                            $full_path = __DIR__ . '/../' . $screenshot;
+                                            ?>
+                                            <?php if (file_exists($full_path)): ?>
+                                                <img src="<?php echo htmlspecialchars($image_path); ?>" alt="Screenshot <?php echo $index + 1; ?>" class="w-full h-20 object-cover rounded border">
+                                            <?php else: ?>
+                                                <div class="w-full h-20 bg-gray-200 rounded border flex items-center justify-center">
+                                                    <span class="text-xs text-gray-500">Missing</span>
+                                                </div>
+                                            <?php endif; ?>
                                             <label class="flex items-center mt-1">
                                                 <input type="checkbox" name="remove_screenshots[]" value="<?php echo $index; ?>" class="h-4 w-4 text-red-600 focus:ring-red-500 border-gray-300 rounded">
                                                 <span class="ml-2 text-xs text-red-600">Remove</span>
@@ -458,43 +410,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             </div>
                         <?php endif; ?>
                         
-                        <!-- File Upload -->
-                        <div id="screenshotUploadInput" <?php echo (($_POST['screenshot_source'] ?? 'upload') === 'url') ? 'class="hidden"' : ''; ?>>
-                            <div class="space-y-3">
-                                <div>
-                                    <label class="block text-sm text-gray-600 mb-1">New Screenshot 1</label>
-                                    <input type="file" name="screenshots[]" accept="image/*" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                                </div>
-                                <div>
-                                    <label class="block text-sm text-gray-600 mb-1">New Screenshot 2</label>
-                                    <input type="file" name="screenshots[]" accept="image/*" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                                </div>
-                                <div>
-                                    <label class="block text-sm text-gray-600 mb-1">New Screenshot 3</label>
-                                    <input type="file" name="screenshots[]" accept="image/*" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                                </div>
+                        <!-- Upload new screenshots -->
+                        <div class="space-y-3">
+                            <div>
+                                <label class="block text-sm text-gray-600 mb-1">New Screenshot 1</label>
+                                <input type="file" name="screenshots[]" accept="image/*" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
                             </div>
-                            <p class="text-sm text-gray-500 mt-1">Upload up to 3 new screenshot images (PNG, JPG, GIF - Max 5MB each)</p>
-                        </div>
-                        
-                        <!-- URL Input -->
-                        <div id="screenshotUrlInput" <?php echo (($_POST['screenshot_source'] ?? 'upload') === 'upload') ? 'class="hidden"' : ''; ?>>
-                            <div class="space-y-3">
-                                <div>
-                                    <label class="block text-sm text-gray-600 mb-1">Screenshot URL 1</label>
-                                    <input type="url" name="screenshot_urls[]" placeholder="https://example.com/screenshot1.jpg" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                                </div>
-                                <div>
-                                    <label class="block text-sm text-gray-600 mb-1">Screenshot URL 2</label>
-                                    <input type="url" name="screenshot_urls[]" placeholder="https://example.com/screenshot2.jpg" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                                </div>
-                                <div>
-                                    <label class="block text-sm text-gray-600 mb-1">Screenshot URL 3</label>
-                                    <input type="url" name="screenshot_urls[]" placeholder="https://example.com/screenshot3.jpg" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                                </div>
+                            <div>
+                                <label class="block text-sm text-gray-600 mb-1">New Screenshot 2</label>
+                                <input type="file" name="screenshots[]" accept="image/*" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
                             </div>
-                            <p class="text-sm text-gray-500 mt-1">Add up to 3 new screenshot URLs</p>
+                            <div>
+                                <label class="block text-sm text-gray-600 mb-1">New Screenshot 3</label>
+                                <input type="file" name="screenshots[]" accept="image/*" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                            </div>
                         </div>
+                        <p class="text-sm text-gray-500 mt-1">Upload up to 3 new screenshot images (PNG, JPG, GIF - Max 5MB each)</p>
                     </div>
 
                     <!-- Featured -->
@@ -547,41 +478,4 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         </main>
     </div>
 </body>
-
-<script>
-function toggleImageInput(source) {
-    const urlInput = document.getElementById('imageUrlInput');
-    const uploadInput = document.getElementById('imageUploadInput');
-    
-    if (source === 'url') {
-        urlInput.classList.remove('hidden');
-        uploadInput.classList.add('hidden');
-    } else {
-        urlInput.classList.add('hidden');
-        uploadInput.classList.remove('hidden');
-    }
-}
-
-function toggleScreenshotInput(source) {
-    const uploadInput = document.getElementById('screenshotUploadInput');
-    const urlInput = document.getElementById('screenshotUrlInput');
-    
-    if (source === 'upload') {
-        uploadInput.classList.remove('hidden');
-        urlInput.classList.add('hidden');
-    } else {
-        uploadInput.classList.add('hidden');
-        urlInput.classList.remove('hidden');
-    }
-}
-
-// Set initial state based on radio buttons
-document.addEventListener('DOMContentLoaded', function() {
-    const imageSource = document.querySelector('input[name="image_source"]:checked').value;
-    const screenshotSource = document.querySelector('input[name="screenshot_source"]:checked').value;
-    
-    toggleImageInput(imageSource);
-    toggleScreenshotInput(screenshotSource);
-});
-</script>
 </html>

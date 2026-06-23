@@ -112,17 +112,20 @@ try {
 </head>
 <body class="bg-gray-50">
     <!-- Navigation -->
-    <nav class="bg-white shadow-lg">
+    <nav class="bg-white shadow-lg fixed top-0 left-0 right-0 z-50">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between h-16">
                 <div class="flex items-center">
-                    <h1 class="text-2xl font-bold text-indigo-600">WebStore Admin</h1>
+                    <button id="menuToggle" class="lg:hidden mr-4 text-gray-600 hover:text-gray-900">
+                        <i class="fas fa-bars text-xl"></i>
+                    </button>
+                    <h1 class="text-xl sm:text-2xl font-bold text-indigo-600">WebStore Admin</h1>
                 </div>
-                <div class="flex items-center space-x-4">
-                    <span class="text-gray-700">Welcome, <?php echo htmlspecialchars($_SESSION['admin_username']); ?></span>
-                    <a href="logout.php" class="bg-red-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-red-700">
+                <div class="flex items-center space-x-2 sm:space-x-4">
+                    <span class="hidden sm:inline text-gray-700">Welcome, <?php echo htmlspecialchars($_SESSION['admin_username']); ?></span>
+                    <a href="logout.php" class="bg-red-600 text-white px-3 py-2 sm:px-4 rounded-md text-sm font-medium hover:bg-red-700">
                         <i class="fas fa-sign-out-alt mr-1"></i>
-                        Logout
+                        <span class="hidden sm:inline">Logout</span>
                     </a>
                 </div>
             </div>
@@ -130,8 +133,8 @@ try {
     </nav>
 
     <!-- Sidebar Navigation -->
-    <div class="flex">
-        <aside class="w-64 bg-white shadow-lg min-h-screen">
+    <div class="flex pt-16">
+        <aside id="sidebar" class="fixed lg:static inset-y-0 left-0 z-40 w-64 bg-white shadow-lg min-h-screen transform -translate-x-full lg:translate-x-0 transition-transform duration-300 ease-in-out pt-16 lg:pt-0">
             <nav class="mt-8">
                 <a href="dashboard.php" class="block px-4 py-3 text-gray-700 hover:bg-gray-50">
                     <i class="fas fa-tachometer-alt mr-3"></i>
@@ -160,8 +163,11 @@ try {
             </nav>
         </aside>
 
+        <!-- Overlay for mobile -->
+        <div id="sidebarOverlay" class="fixed inset-0 bg-black bg-opacity-50 z-30 hidden lg:hidden"></div>
+
         <!-- Main Content -->
-        <main class="flex-1 p-8">
+        <main class="flex-1 p-4 sm:p-6 lg:p-8 w-full">
             <div class="flex justify-between items-center mb-8">
                 <h2 class="text-3xl font-bold">Manage Categories</h2>
                 <a href="websites.php" class="bg-gray-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-gray-700 transition">
@@ -298,6 +304,19 @@ try {
                 closeEditModal();
             }
         });
+
+        // Mobile sidebar toggle
+        const menuToggle = document.getElementById('menuToggle');
+        const sidebar = document.getElementById('sidebar');
+        const sidebarOverlay = document.getElementById('sidebarOverlay');
+
+        function toggleSidebar() {
+            sidebar.classList.toggle('-translate-x-full');
+            sidebarOverlay.classList.toggle('hidden');
+        }
+
+        menuToggle.addEventListener('click', toggleSidebar);
+        sidebarOverlay.addEventListener('click', toggleSidebar);
     </script>
 </body>
 </html>

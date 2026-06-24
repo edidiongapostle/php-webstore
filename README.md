@@ -1,6 +1,6 @@
 # WebStore - PHP E-commerce Platform
 
-A modern PHP e-commerce webapp for selling premium websites and digital products with anonymous checkout and cryptocurrency payment support.
+A modern PHP e-commerce webapp for selling premium websites and digital products with anonymous checkout, cryptocurrency payment support, and secure digital product delivery.
 
 ## Features
 
@@ -9,8 +9,11 @@ A modern PHP e-commerce webapp for selling premium websites and digital products
 - **Shopping Cart** - Full cart management with session storage
 - **Secure Checkout** - Multi-step checkout with validation
 - **Order Management** - Complete order tracking and status updates
-- **Anonymous Checkout** - Privacy-focused purchasing option
+- **Anonymous Checkout** - Privacy-focused purchasing option (email only required)
 - **Cryptocurrency Payments** - Bitcoin, Ethereum, and more
+- **Dynamic Order References** - Unique order IDs (TKR-YYYYMMDD-XXXXXX format)
+- **Payment Verification** - Admin review system for payment confirmation
+- **Digital Product Delivery** - Secure download links with token-based access
 
 ### Payment Methods
 - **Credit/Debit Cards** - Stripe integration ready
@@ -18,24 +21,41 @@ A modern PHP e-commerce webapp for selling premium websites and digital products
 - **Bank Transfer** - Direct bank payment option
 - **Cryptocurrency** - BTC, ETH, LTC support
 
+### Purchase Flow
+- **Payment Instructions** - Detailed payment instructions after checkout
+- **Payment Confirmation** - Submit transaction reference and screenshot
+- **Order Verification** - Admin approves/rejects payments
+- **Download Generation** - Secure download tokens upon approval
+- **Email Notifications** - Automated emails for order status updates
+- **Download Protection** - 5-download limit with 30-day expiration
+
 ### Privacy & Security
-- **Anonymous Purchases** - No personal data required
+- **Anonymous Purchases** - No personal data required (email only for delivery)
 - **Privacy Policy** - Comprehensive privacy protection
 - **Terms of Use** - Legal agreement system
 - **Secure Payments** - Encrypted transactions
+- **Protected Downloads** - Files stored outside web root with token access
 
 ### Admin Panel
 - **Dashboard** - Real-time statistics and analytics
 - **Product Management** - Full CRUD for websites
-- **Order Management** - Complete order processing
-- **Settings Panel** - Configure payment methods and features
+- **Order Management** - Complete order processing with payment verification
+- **Settings Panel** - Configure payment methods and features (mobile-responsive sidebar)
 - **Customer Support** - Contact form and message handling
+- **Payment Review** - Approve/reject payments with screenshot verification
+
+### Content Pages
+- **About Page** - Company information and mission
+- **Blog Page** - News and articles
+- **Privacy Policy** - Data protection information
+- **Terms of Use** - Legal terms and conditions
 
 ### Design & UX
 - **Responsive Design** - Mobile-first approach
 - **Modern UI** - Tailwind CSS styling
 - **FontAwesome Icons** - Professional iconography
 - **SEO Optimized** - Meta tags and structured data
+- **Email Templates** - Professional HTML email designs
 
 ## Technology Stack
 
@@ -118,17 +138,32 @@ webstore/
 │   ├── dashboard.php      # Admin dashboard
 │   ├── websites.php       # Product management
 │   ├── orders.php         # Order management
-│   ├── settings.php       # Settings panel
+│   ├── view_order.php    # Order details and payment verification
+│   ├── settings.php       # Settings panel (mobile-responsive sidebar)
 │   └── ...
 ├── database/               # Database files
 │   ├── init.php          # Database initialization
 │   └── webstore.db       # SQLite database
-├── assets/                # Static assets (CSS, JS, images)
+├── templates/              # Email templates
+│   ├── order_approved.php
+│   ├── order_confirmation.php
+│   └── order_rejected.php
+├── protected_downloads/    # Secure file storage (not web-accessible)
+├── uploads/                # User uploads
+│   ├── images/           # Product images
+│   ├── screenshots/      # Website screenshots
+│   ├── qr_codes/         # Payment QR codes
+│   └── payment_proofs/   # Payment proof screenshots
 ├── config.php             # Application configuration
 ├── functions.php          # Helper functions
 ├── index.php             # Homepage
+├── about.php             # About page
+├── blog.php              # Blog page
 ├── cart.php              # Shopping cart
 ├── checkout.php           # Checkout process
+├── payment_instructions.php # Payment instructions page
+├── payment_confirmation.php # Payment confirmation form
+├── download.php           # Secure file download handler
 ├── contact.php            # Contact form
 ├── privacy.php            # Privacy policy
 ├── terms.php              # Terms of use
@@ -140,9 +175,19 @@ webstore/
 ### Anonymous Checkout
 Customers can purchase without providing personal information:
 - Toggle anonymous option during checkout
-- No name/email required
+- Only email required for delivery (name hidden)
 - Crypto payments recommended for privacy
 - Orders marked as "Anonymous" in admin
+- Email displayed only for anonymous orders in admin panel
+
+### New Purchase Flow
+Enhanced purchase process with payment verification:
+1. **Checkout** - Customer fills details (name hidden if anonymous)
+2. **Payment Instructions** - Display order reference and payment details
+3. **Payment Confirmation** - Submit transaction reference and screenshot
+4. **Order Verification** - Admin reviews payment proof
+5. **Download Generation** - Secure download tokens upon approval
+6. **Email Notifications** - Automated status updates
 
 ### Cryptocurrency Payments
 Support for multiple cryptocurrencies:
@@ -150,7 +195,23 @@ Support for multiple cryptocurrencies:
 - Ethereum (ETH)
 - Litecoin (LTC)
 - Wallet address configuration in admin
-- Real-time payment processing
+- QR code support for easy payments
+
+### Secure Download System
+Protected digital product delivery:
+- Token-based access (e.g., /download/4f8a2b7)
+- Files stored outside web root
+- 5-download limit per order
+- 30-day expiration on download links
+- Download count tracking in database
+
+### Email Templates
+Professional HTML email notifications:
+- Order confirmation emails
+- Payment verification emails
+- Order approval emails with download links
+- Order rejection emails
+- Template system for easy customization
 
 ### Admin Settings Panel
 Comprehensive configuration options:
@@ -159,6 +220,7 @@ Comprehensive configuration options:
 - SEO settings
 - Tax and pricing configuration
 - Maintenance mode
+- Mobile-responsive sidebar navigation
 
 ## Security Features
 
@@ -173,11 +235,18 @@ Comprehensive configuration options:
 
 ### Main Tables
 - `websites` - Product catalog
-- `orders` - Customer orders
+- `orders` - Customer orders (with order_reference, download_token, transaction_reference, payment_screenshot)
 - `order_items` - Order line items
+- `downloads` - Secure download tokens and file paths
 - `contact_messages` - Customer inquiries
 - `settings` - Application configuration
 - `payment_methods` - Payment gateway settings
+
+### Order Status Values
+- `pending` - Order created, awaiting payment
+- `awaiting_verification` - Payment submitted, awaiting admin review
+- `completed` - Payment verified, download available
+- `cancelled` - Order cancelled or payment rejected
 
 ## Deployment
 

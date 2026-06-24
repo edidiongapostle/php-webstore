@@ -217,51 +217,15 @@ function sendOrderApprovalEmail($order) {
 
     $subject = "Your Order Has Been Approved - {$order_ref}";
 
-    $message = "
-    <html>
-    <head>
-        <title>Order Approved</title>
-    </head>
-    <body style='font-family: Arial, sans-serif; line-height: 1.6; color: #333;'>
-        <div style='max-width: 600px; margin: 0 auto; padding: 20px;'>
-            <div style='background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 30px; text-align: center; border-radius: 10px 10px 0 0;'>
-                <h1 style='color: white; margin: 0; font-size: 28px;'>{$site_name}</h1>
-            </div>
-            <div style='background: #f9f9f9; padding: 30px; border-radius: 0 0 10px 10px;'>
-                <h2 style='color: #333; margin-top: 0;'>Your Order Has Been Approved!</h2>
-                <p>Great news! Your order <strong>{$order_ref}</strong> has been verified and approved.</p>
-                
-                <div style='background: white; padding: 20px; border-left: 4px solid #667eea; margin: 20px 0;'>
-                    <h3 style='margin-top: 0; color: #667eea;'>Download Your Purchase</h3>
-                    <p>You can now download your purchased items using the link below:</p>
-                    <p style='text-align: center; margin: 20px 0;'>
-                        <a href='{$download_link}' style='background: #667eea; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; font-weight: bold; display: inline-block;'>Download Now</a>
-                    </p>
-                    <p style='font-size: 12px; color: #666;'>Or copy this link: {$download_link}</p>
-                </div>
+    $data = [
+        'site_name' => $site_name,
+        'order_reference' => $order_ref,
+        'download_link' => $download_link,
+        'total_amount' => formatPrice($order['total_amount']),
+        'current_year' => date('Y')
+    ];
 
-                <div style='background: #fff3cd; padding: 15px; border-radius: 5px; margin: 20px 0;'>
-                    <h4 style='margin-top: 0; color: #856404;'>Important Notes:</h4>
-                    <ul style='margin: 10px 0; padding-left: 20px; color: #856404;'>
-                        <li>You can download your files up to 5 times</li>
-                        <li>The download link is valid for this order only</li>
-                        <li>Please save your files in a secure location</li>
-                    </ul>
-                </div>
-
-                <p style='color: #666; font-size: 14px;'>If you have any questions or issues, please contact our support team.</p>
-                
-                <hr style='border: none; border-top: 1px solid #ddd; margin: 30px 0;'>
-                
-                <p style='text-align: center; color: #999; font-size: 12px;'>
-                    &copy; " . date('Y') . " {$site_name}. All rights reserved.<br>
-                    This is an automated email, please do not reply.
-                </p>
-            </div>
-        </div>
-    </body>
-    </html>
-    ";
+    $message = renderEmailTemplate('order_approved', $data);
 
     $headers = "MIME-Version: 1.0\r\n";
     $headers .= "Content-type: text/html; charset=UTF-8\r\n";
@@ -269,5 +233,38 @@ function sendOrderApprovalEmail($order) {
     $headers .= "Reply-To: {$site_email}\r\n";
 
     return mail($order['customer_email'], $subject, $message, $headers);
+}
+
+function renderEmailTemplate($template_name, $data = []) {
+    $template_path = __DIR__ . '/templates/' . $template_name . '.php';
+
+    if (!file_exists($template_path)) {
+        return '<p>Email template not found.</p>';
+    }
+
+    ob_start();
+    include $template_path;
+    $content = ob_get_clean();
+
+    // Replace placeholders with data
+    foreach ($data as $key => $value) {
+        $content = str_replace('{{' . $key . '}}', $value, $content);
+    }
+
+    return $content;
+}
+
+function sendEmail($to, $subject, $template_name, $data = []) {
+    $site_name = getSetting('site_name', 'WebStore');
+    $site_email = getSetting('site_email', 'noreply@webstore.com');
+
+    $message = renderEmailTemplate($template_name, $data);
+
+    $headers = "MIME-Version: 1.0\r\n";
+    $headers .= "Content-type: text/html; charset=UTF-8\r\n";
+    $headers .= "From: {$site_name} <{$site_email}>\r\n";
+    $headers .= "Reply-To: {$site_email}\r\n";
+
+    return mail($to, $subject, $message, $headers);
 }
 ?>

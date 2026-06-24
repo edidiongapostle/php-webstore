@@ -117,6 +117,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $_SESSION['order_reference'] = $order_reference;
                 $_SESSION['payment_method'] = $payment_method;
 
+                // Send order confirmation email
+                $email_data = [
+                    'site_name' => $site_name,
+                    'order_reference' => $order_reference,
+                    'total_amount' => formatPrice($cart_total),
+                    'payment_method' => $payment_method,
+                    'current_year' => date('Y')
+                ];
+                sendEmail($customer_data['email'], "Order Confirmation - {$order_reference}", 'order_confirmation', $email_data);
+
                 $success = true;
             } else {
                 $errors['general'] = 'Failed to create order. Please try again.';

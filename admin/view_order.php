@@ -40,7 +40,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
         $stmt = $conn->prepare("UPDATE orders SET status = 'cancelled', updated_at = CURRENT_TIMESTAMP WHERE id = ?");
         $stmt->execute([$order_id]);
         $order['status'] = 'cancelled';
-        $success = 'Order rejected.';
+
+        // Send rejection email to customer
+        $site_name = getSetting('site_name', 'WebStore');
+        $email_data = [
+            'site_name' => $site_name,
+            'order_reference' => $order['order_reference'],
+            'total_amount' => formatPrice($order['total_amount']),
+            'current_year' => date('Y')
+        ];
+        sendEmail($order['customer_email'], "Order Payment Verification Failed - {$order['order_reference']}", 'order_rejected', $email_data);
+
+        $success = 'Order rejected. Notification email sent.';
     }
 }
 

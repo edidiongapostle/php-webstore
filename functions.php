@@ -267,4 +267,16 @@ function sendEmail($to, $subject, $template_name, $data = []) {
 
     return mail($to, $subject, $message, $headers);
 }
+
+function createDownloadEntry($order_id, $token, $file_path) {
+    global $conn;
+
+    // Set expiration to 30 days from now
+    $expires_at = date('Y-m-d H:i:s', strtotime('+30 days'));
+
+    $stmt = $conn->prepare("INSERT INTO downloads (order_id, token, file_path, max_downloads, expires_at) VALUES (?, ?, ?, 5, ?)");
+    $stmt->execute([$order_id, $token, $file_path, $expires_at]);
+
+    return $conn->lastInsertId();
+}
 ?>

@@ -25,12 +25,24 @@ $order = $stmt->fetch();
 // Handle order approval/rejection
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
     if ($_POST['action'] === 'approve' && $order['status'] === 'awaiting_verification') {
-        // Generate download token
+        // Get order items
+        $stmt = $conn->prepare("SELECT * FROM order_items WHERE order_id = ?");
+        $stmt->execute([$order_id]);
+        $order_items = $stmt->fetchAll();
+
+        // Generate download token and create download entries for each item
         $download_token = generateDownloadToken();
         $stmt = $conn->prepare("UPDATE orders SET status = 'completed', download_token = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?");
         $stmt->execute([$download_token, $order_id]);
         $order['status'] = 'completed';
         $order['download_token'] = $download_token;
+
+        // Create download entries for each order item
+        foreach ($order_items as $item) {
+            // For now, use a placeholder file path - this should be updated to actual file paths
+            $file_path = 'website_' . $item['website_id'] . '.zip';
+            createDownloadEntry($order_id, $download_token, $file_path);
+        }
 
         // Send approval email to customer
         $email_sent = sendOrderApprovalEmail($order);

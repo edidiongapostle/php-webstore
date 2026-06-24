@@ -10,36 +10,40 @@ if (empty($token)) {
     exit;
 }
 
-// Get order by download token
-$stmt = $conn->prepare("SELECT * FROM orders WHERE download_token = ? AND status = 'completed'");
+// Get download record from database
+$stmt = $conn->prepare("SELECT d.*, o.status, o.order_reference, o.total_amount FROM downloads d JOIN orders o ON d.order_id = o.id WHERE d.token = ?");
 $stmt->execute([$token]);
-$order = $stmt->fetch();
+$download = $stmt->fetch();
 
-if (!$order) {
+if (!$download) {
     header('Location: index.php');
     exit;
 }
 
+// Check if order is completed
+if ($download['status'] !== 'completed') {
+    $error = 'Order not yet approved.';
+}
+
 // Check download limit
-if ($order['download_count'] >= 5) {
-    $error = 'Download limit exceeded. You have already downloaded this file 5 times.';
+if ($download['download_count'] >= $download['max_downloads']) {
+    $error = 'Download limit exceeded. You have already downloaded this file ' . $download['max_downloads'] . ' times.';
+}
+
+// Check if expired
+if ($download['expires_at'] && strtotime($download['expires_at']) < time()) {
+    $error = 'Download link has expired.';
 }
 
 // Get order items
 $stmt = $conn->prepare("SELECT * FROM order_items WHERE order_id = ?");
-$stmt->execute([$order['id']]);
+$stmt->execute([$download['order_id']]);
 $order_items = $stmt->fetchAll();
 
 // Handle download
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['download']) && !isset($error)) {
-    // Increment download count
-    $stmt = $conn->prepare("UPDATE orders SET download_count = download_count + 1 WHERE id = ?");
-    $stmt->execute([$order['id']]);
-
-    // For this implementation, we'll redirect to a page showing download links
-    // In a real implementation, you would serve actual files
-    $_SESSION['downloaded'] = true;
-    header('Location: download.php?token=' . $token);
+    // Redirect to the actual file download handler
+    header('Location: download/' . $token);
     exit;
 }
 
@@ -90,7 +94,7 @@ $pageTitle = "Download - " . $site_name;
                         <i class="fas fa-check-circle text-6xl text-green-500 mb-4"></i>
                         <h2 class="text-2xl font-bold text-green-900 mb-2">Download Ready!</h2>
                         <p class="text-green-800 mb-4">Your files are ready for download.</p>
-                        <p class="text-sm text-green-700">Downloads remaining: <?php echo 5 - $order['download_count']; ?>/5</p>
+                        <p class="text-sm text-green-700">Downloads remaining: <?php echo $download['max_downloads'] - $download['download_count']; ?>/<?php echo $download['max_downloads']; ?></p>
                     </div>
                 </div>
 
@@ -102,9 +106,9 @@ $pageTitle = "Download - " . $site_name;
                             <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
                                 <div>
                                     <p class="font-medium"><?php echo htmlspecialchars($item['title']); ?></p>
-                                    <p class="text-sm text-gray-500">Order: <?php echo htmlspecialchars($order['order_reference']); ?></p>
+                                    <p class="text-sm text-gray-500">Order: <?php echo htmlspecialchars($download['order_reference']); ?></p>
                                 </div>
-                                <a href="#" class="bg-indigo-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-indigo-700 transition">
+                                <a href="download/<?php echo htmlspecialchars($token); ?>" class="bg-indigo-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-indigo-700 transition">
                                     <i class="fas fa-download mr-2"></i>
                                     Download
                                 </a>
@@ -125,15 +129,15 @@ $pageTitle = "Download - " . $site_name;
                         <div class="space-y-2">
                             <div class="flex justify-between">
                                 <span class="text-gray-600">Order Reference:</span>
-                                <span class="font-medium"><?php echo htmlspecialchars($order['order_reference']); ?></span>
+                                <span class="font-medium"><?php echo htmlspecialchars($download['order_reference']); ?></span>
                             </div>
                             <div class="flex justify-between">
                                 <span class="text-gray-600">Downloads Used:</span>
-                                <span class="font-medium"><?php echo $order['download_count']; ?>/5</span>
+                                <span class="font-medium"><?php echo $download['download_count']; ?>/<?php echo $download['max_downloads']; ?></span>
                             </div>
                             <div class="flex justify-between">
                                 <span class="text-gray-600">Downloads Remaining:</span>
-                                <span class="font-medium text-green-600"><?php echo 5 - $order['download_count']; ?></span>
+                                <span class="font-medium text-green-600"><?php echo $download['max_downloads'] - $download['download_count']; ?></span>
                             </div>
                         </div>
                     </div>

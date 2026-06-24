@@ -212,7 +212,7 @@ function sendOrderApprovalEmail($order) {
     $site_email = getSetting('site_email', 'noreply@webstore.com');
     $site_url = SITE_URL;
 
-    $download_link = $site_url . '/download.php?token=' . $order['download_token'];
+    $download_link = $site_url . '/download/' . $order['download_token'];
     $order_ref = $order['order_reference'];
 
     $subject = "Your Order Has Been Approved - {$order_ref}";

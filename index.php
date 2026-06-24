@@ -47,12 +47,14 @@ $pageTitle = $seo_title . " - " . $site_name;
                 <!-- Desktop Navigation -->
                 <div class="hidden md:flex items-center space-x-4">
                     <a href="index.php" class="text-gray-700 hover:text-indigo-600 px-3 py-2 rounded-md text-sm font-medium">Home</a>
+                    <a href="about.php" class="text-gray-700 hover:text-indigo-600 px-3 py-2 rounded-md text-sm font-medium">About</a>
+                    <a href="blog.php" class="text-gray-700 hover:text-indigo-600 px-3 py-2 rounded-md text-sm font-medium">Blog</a>
                     <a href="contact.php" class="text-gray-700 hover:text-indigo-600 px-3 py-2 rounded-md text-sm font-medium">Contact</a>
                     <a href="cart.php" class="relative text-gray-700 hover:text-indigo-600 px-3 py-2 rounded-md text-sm font-medium">
                         <i class="fas fa-shopping-cart"></i>
-                        <?php 
+                        <?php
                         $cart_count = getCartCount();
-                        if ($cart_count > 0): 
+                        if ($cart_count > 0):
                         ?>
                             <span class="absolute -top-1 -right-1 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs">
                                 <?php echo $cart_count; ?>
@@ -74,13 +76,15 @@ $pageTitle = $seo_title . " - " . $site_name;
             <div id="mobile-menu" class="hidden md:hidden pb-4">
                 <div class="flex flex-col space-y-2">
                     <a href="index.php" class="text-gray-700 hover:text-indigo-600 px-3 py-2 rounded-md text-sm font-medium">Home</a>
+                    <a href="about.php" class="text-gray-700 hover:text-indigo-600 px-3 py-2 rounded-md text-sm font-medium">About</a>
+                    <a href="blog.php" class="text-gray-700 hover:text-indigo-600 px-3 py-2 rounded-md text-sm font-medium">Blog</a>
                     <a href="contact.php" class="text-gray-700 hover:text-indigo-600 px-3 py-2 rounded-md text-sm font-medium">Contact</a>
                     <a href="cart.php" class="relative text-gray-700 hover:text-indigo-600 px-3 py-2 rounded-md text-sm font-medium">
                         <i class="fas fa-shopping-cart mr-2"></i>
                         Cart
-                        <?php 
+                        <?php
                         $cart_count = getCartCount();
-                        if ($cart_count > 0): 
+                        if ($cart_count > 0):
                         ?>
                             <span class="ml-2 bg-red-500 text-white rounded-full px-2 py-1 text-xs">
                                 <?php echo $cart_count; ?>
@@ -162,6 +166,8 @@ $pageTitle = $seo_title . " - " . $site_name;
                     <h3 class="text-lg font-semibold mb-4">Quick Links</h3>
                     <ul class="space-y-2">
                         <li><a href="index.php" class="text-gray-400 hover:text-white">Home</a></li>
+                        <li><a href="about.php" class="text-gray-400 hover:text-white">About</a></li>
+                        <li><a href="blog.php" class="text-gray-400 hover:text-white">Blog</a></li>
                         <li><a href="contact.php" class="text-gray-400 hover:text-white">Contact</a></li>
                         <li><a href="cart.php" class="text-gray-400 hover:text-white">Shopping Cart</a></li>
                     </ul>

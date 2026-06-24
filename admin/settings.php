@@ -243,10 +243,34 @@ $pageTitle = "Settings - WebStore Admin";
                     <i class="fas fa-plus mr-3"></i>
                     Add Website
                 </a>
-                <a href="settings.php" class="block px-4 py-3 text-gray-700 bg-indigo-50 border-r-4 border-indigo-600">
-                    <i class="fas fa-cog mr-3"></i>
-                    Settings
-                </a>
+                <div class="mt-4">
+                    <a href="settings.php?tab=general" class="block px-4 py-3 text-gray-700 bg-indigo-50 border-r-4 border-indigo-600">
+                        <i class="fas fa-cog mr-3"></i>
+                        Settings
+                    </a>
+                    <div class="ml-4 border-l-2 border-gray-200">
+                        <a href="?tab=general" class="block px-4 py-2 text-sm text-gray-600 hover:bg-gray-50 <?php echo $active_tab === 'general' ? 'text-indigo-600 font-medium bg-indigo-50' : ''; ?>">
+                            <i class="fas fa-cog mr-2 text-xs"></i>
+                            General
+                        </a>
+                        <a href="?tab=payment" class="block px-4 py-2 text-sm text-gray-600 hover:bg-gray-50 <?php echo $active_tab === 'payment' ? 'text-indigo-600 font-medium bg-indigo-50' : ''; ?>">
+                            <i class="fas fa-credit-card mr-2 text-xs"></i>
+                            Payment Methods
+                        </a>
+                        <a href="?tab=pricing" class="block px-4 py-2 text-sm text-gray-600 hover:bg-gray-50 <?php echo $active_tab === 'pricing' ? 'text-indigo-600 font-medium bg-indigo-50' : ''; ?>">
+                            <i class="fas fa-dollar-sign mr-2 text-xs"></i>
+                            Pricing
+                        </a>
+                        <a href="?tab=features" class="block px-4 py-2 text-sm text-gray-600 hover:bg-gray-50 <?php echo $active_tab === 'features' ? 'text-indigo-600 font-medium bg-indigo-50' : ''; ?>">
+                            <i class="fas fa-star mr-2 text-xs"></i>
+                            Features
+                        </a>
+                        <a href="?tab=seo" class="block px-4 py-2 text-sm text-gray-600 hover:bg-gray-50 <?php echo $active_tab === 'seo' ? 'text-indigo-600 font-medium bg-indigo-50' : ''; ?>">
+                            <i class="fas fa-search mr-2 text-xs"></i>
+                            SEO
+                        </a>
+                    </div>
+                </div>
             </nav>
         </aside>
 
@@ -271,34 +295,6 @@ $pageTitle = "Settings - WebStore Admin";
                     <?php echo implode('<br>', $errors); ?>
                 </div>
             <?php endif; ?>
-
-            <!-- Tab Navigation -->
-            <div class="bg-white rounded-lg shadow-lg mb-6">
-                <div class="border-b border-gray-200">
-                    <nav class="flex space-x-8 px-6">
-                        <a href="?tab=general" class="py-4 px-1 border-b-2 font-medium text-sm <?php echo $active_tab === 'general' ? 'border-indigo-500 text-indigo-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'; ?>">
-                            <i class="fas fa-cog mr-2"></i>
-                            General
-                        </a>
-                        <a href="?tab=payment" class="py-4 px-1 border-b-2 font-medium text-sm <?php echo $active_tab === 'payment' ? 'border-indigo-500 text-indigo-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'; ?>">
-                            <i class="fas fa-credit-card mr-2"></i>
-                            Payment Methods
-                        </a>
-                        <a href="?tab=pricing" class="py-4 px-1 border-b-2 font-medium text-sm <?php echo $active_tab === 'pricing' ? 'border-indigo-500 text-indigo-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'; ?>">
-                            <i class="fas fa-dollar-sign mr-2"></i>
-                            Pricing
-                        </a>
-                        <a href="?tab=features" class="py-4 px-1 border-b-2 font-medium text-sm <?php echo $active_tab === 'features' ? 'border-indigo-500 text-indigo-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'; ?>">
-                            <i class="fas fa-star mr-2"></i>
-                            Features
-                        </a>
-                        <a href="?tab=seo" class="py-4 px-1 border-b-2 font-medium text-sm <?php echo $active_tab === 'seo' ? 'border-indigo-500 text-indigo-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'; ?>">
-                            <i class="fas fa-search mr-2"></i>
-                            SEO
-                        </a>
-                    </nav>
-                </div>
-            </div>
 
             <!-- General Settings Tab -->
             <?php if ($active_tab === 'general'): ?>

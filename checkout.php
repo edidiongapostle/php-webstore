@@ -31,20 +31,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Basic validation - payment details will be validated in payment.php
     $payment_method = sanitizeInput($_POST['payment_method'] ?? '');
     $anonymous_checkout = isset($_POST['anonymous_checkout']) ? $_POST['anonymous_checkout'] : '0';
-    
-    // Validate billing information if not anonymous checkout
+
+    // Email is always required (for delivery)
+    $email = sanitizeInput($_POST['email'] ?? '');
+    if (empty($email)) {
+        $errors['email'] = 'Email address is required for delivery';
+    } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        $errors['email'] = 'Please enter a valid email address';
+    }
+
+    // Name is only required if not anonymous checkout
     if ($anonymous_checkout !== '1') {
         $name = sanitizeInput($_POST['name'] ?? '');
-        $email = sanitizeInput($_POST['email'] ?? '');
-        
         if (empty($name)) {
             $errors['name'] = 'Full name is required';
-        }
-        
-        if (empty($email)) {
-            $errors['email'] = 'Email address is required';
-        } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-            $errors['email'] = 'Please enter a valid email address';
         }
     }
     
@@ -57,11 +57,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $errors['accept_terms'] = 'You must accept the Terms of Use to complete your purchase';
     }
     
-    // If no errors, redirect to payment page
+    // If no errors, redirect to payment instructions page
     if (empty($errors)) {
-        // Store form data in session for payment.php
+        // Store form data in session for payment_instructions.php
         $_SESSION['checkout_data'] = $_POST;
-        header('Location: payment.php');
+        header('Location: payment_instructions.php');
         exit;
     }
 }
@@ -79,14 +79,16 @@ $pageTitle = "Checkout - WebStore";
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script>
         function toggleAnonymousFields(isAnonymous) {
-            const billingFields = document.getElementById('billing-fields');
-            if (isAnonymous) {
-                billingFields.style.display = 'none';
-            } else {
-                billingFields.style.display = 'block';
+            const nameField = document.querySelector('input[name="name"]').closest('div');
+            if (nameField) {
+                if (isAnonymous) {
+                    nameField.style.display = 'none';
+                } else {
+                    nameField.style.display = 'block';
+                }
             }
         }
-        
+
         // Check if anonymous checkout was previously selected
         document.addEventListener('DOMContentLoaded', function() {
             const anonymousCheckbox = document.querySelector('input[name="anonymous_checkout"]');
@@ -157,7 +159,7 @@ $pageTitle = "Checkout - WebStore";
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <!-- Checkout Form -->
             <div class="lg:col-span-2">
-                <form method="POST" action="payment.php" class="space-y-6">
+                <form method="POST" class="space-y-6">
                     <!-- Billing Information -->
                     <div class="bg-white rounded-lg shadow-lg p-6">
                         <h3 class="text-xl font-semibold mb-4">Billing Information</h3>
@@ -170,11 +172,9 @@ $pageTitle = "Checkout - WebStore";
                                        onchange="toggleAnonymousFields(this.checked)">
                                 <span class="text-sm font-medium text-gray-700">Checkout Anonymously</span>
                             </label>
-                            <p class="text-sm text-gray-500 mt-1">Check this to skip personal information fields</p>
+                            <p class="text-sm text-gray-500 mt-1">Hide your name (email still required for delivery)</p>
                         </div>
                         <?php endif; ?>
-                        
-                        <div id="billing-fields">
                         <?php if (isset($errors['general'])): ?>
                             <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
                                 <?php echo $errors['general']; ?>
@@ -271,7 +271,7 @@ $pageTitle = "Checkout - WebStore";
                                         <?php endif; ?>
                                         <?php if ($payment['type'] === 'bank_transfer' && !empty($config['bank_name'])): ?>
                                             <div class="text-xs text-gray-500 mt-1">
-                                                Transfer to <?php echo htmlspecialchars($config['bank_name']); ?>
+                                                Transfer to <?php echo htmlspecialchars($config['bank_name']); ?> (Account: <?php echo htmlspecialchars($config['account_number'] ?? '****'); ?>)
                                             </div>
                                         <?php endif; ?>
                                     </div>

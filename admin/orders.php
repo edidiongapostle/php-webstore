@@ -135,20 +135,33 @@ $orders = $conn->query("
                                             <span class="text-sm font-medium text-gray-900">#<?php echo str_pad($order['id'], 6, '0', STR_PAD_LEFT); ?></span>
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap">
-                                            <div class="text-sm font-medium text-gray-900">
-                                                <?php echo htmlspecialchars($order['customer_name']); ?>
-                                                <?php if ($order['anonymous_checkout']): ?>
+                                            <?php if ($order['anonymous_checkout']): ?>
+                                                <div class="text-sm font-medium text-gray-900">
+                                                    <a href="mailto:<?php echo htmlspecialchars($order['customer_email']); ?>" class="text-indigo-600 hover:text-indigo-900">
+                                                        <?php echo htmlspecialchars($order['customer_email']); ?>
+                                                    </a>
                                                     <span class="ml-2 px-2 py-1 bg-gray-100 text-gray-600 rounded-full text-xs">Anonymous</span>
+                                                </div>
+                                                <?php if ($order['customer_phone']): ?>
+                                                    <div class="text-sm text-gray-500"><?php echo htmlspecialchars($order['customer_phone']); ?></div>
                                                 <?php endif; ?>
-                                            </div>
-                                            <?php if ($order['customer_phone']): ?>
-                                                <div class="text-sm text-gray-500"><?php echo htmlspecialchars($order['customer_phone']); ?></div>
+                                            <?php else: ?>
+                                                <div class="text-sm font-medium text-gray-900">
+                                                    <?php echo htmlspecialchars($order['customer_name']); ?>
+                                                </div>
+                                                <?php if ($order['customer_phone']): ?>
+                                                    <div class="text-sm text-gray-500"><?php echo htmlspecialchars($order['customer_phone']); ?></div>
+                                                <?php endif; ?>
                                             <?php endif; ?>
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap">
-                                            <a href="mailto:<?php echo htmlspecialchars($order['customer_email']); ?>" class="text-sm text-indigo-600 hover:text-indigo-900">
-                                                <?php echo htmlspecialchars($order['customer_email']); ?>
-                                            </a>
+                                            <?php if (!$order['anonymous_checkout']): ?>
+                                                <a href="mailto:<?php echo htmlspecialchars($order['customer_email']); ?>" class="text-sm text-indigo-600 hover:text-indigo-900">
+                                                    <?php echo htmlspecialchars($order['customer_email']); ?>
+                                                </a>
+                                            <?php else: ?>
+                                                <span class="text-sm text-gray-400">-</span>
+                                            <?php endif; ?>
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                                             <?php echo $order['item_count']; ?> item(s)
@@ -159,8 +172,9 @@ $orders = $conn->query("
                                         <td class="px-6 py-4 whitespace-nowrap">
                                             <form method="POST" class="inline-block">
                                                 <input type="hidden" name="order_id" value="<?php echo $order['id']; ?>">
-                                                <select name="status" onchange="this.form.submit()" class="text-sm border rounded px-2 py-1 <?php echo $order['status'] === 'completed' ? 'bg-green-100 text-green-800' : ($order['status'] === 'pending' ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800'); ?>">
+                                                <select name="status" onchange="this.form.submit()" class="text-sm border rounded px-2 py-1 <?php echo $order['status'] === 'completed' ? 'bg-green-100 text-green-800' : ($order['status'] === 'pending' ? 'bg-yellow-100 text-yellow-800' : ($order['status'] === 'awaiting_verification' ? 'bg-blue-100 text-blue-800' : 'bg-red-100 text-red-800')); ?>">
                                                     <option value="pending" <?php echo $order['status'] === 'pending' ? 'selected' : ''; ?>>Pending</option>
+                                                    <option value="awaiting_verification" <?php echo $order['status'] === 'awaiting_verification' ? 'selected' : ''; ?>>Awaiting Verification</option>
                                                     <option value="completed" <?php echo $order['status'] === 'completed' ? 'selected' : ''; ?>>Completed</option>
                                                     <option value="cancelled" <?php echo $order['status'] === 'cancelled' ? 'selected' : ''; ?>>Cancelled</option>
                                                 </select>

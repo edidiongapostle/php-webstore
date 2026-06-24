@@ -22,6 +22,28 @@ $stmt = $conn->prepare("SELECT * FROM orders WHERE id = ?");
 $stmt->execute([$order_id]);
 $order = $stmt->fetch();
 
+// Handle order approval/rejection
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
+    if ($_POST['action'] === 'approve' && $order['status'] === 'awaiting_verification') {
+        // Generate download token
+        $download_token = generateDownloadToken();
+        $stmt = $conn->prepare("UPDATE orders SET status = 'completed', download_token = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?");
+        $stmt->execute([$download_token, $order_id]);
+        $order['status'] = 'completed';
+        $order['download_token'] = $download_token;
+
+        // Send approval email to customer
+        $email_sent = sendOrderApprovalEmail($order);
+
+        $success = 'Order approved successfully! Download link generated.' . ($email_sent ? ' Notification email sent.' : ' (Email notification failed)');
+    } elseif ($_POST['action'] === 'reject' && $order['status'] === 'awaiting_verification') {
+        $stmt = $conn->prepare("UPDATE orders SET status = 'cancelled', updated_at = CURRENT_TIMESTAMP WHERE id = ?");
+        $stmt->execute([$order_id]);
+        $order['status'] = 'cancelled';
+        $success = 'Order rejected.';
+    }
+}
+
 if (!$order) {
     header('Location: orders.php');
     exit;
@@ -104,6 +126,12 @@ $order_items = $stmt->fetchAll();
                 </a>
             </div>
 
+            <?php if (isset($success)): ?>
+                <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-6">
+                    <?php echo $success; ?>
+                </div>
+            <?php endif; ?>
+
             <!-- Order Header -->
             <div class="bg-white rounded-lg shadow-lg p-6 mb-6">
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -111,8 +139,8 @@ $order_items = $stmt->fetchAll();
                         <h3 class="text-lg font-semibold mb-4">Order Information</h3>
                         <div class="space-y-2">
                             <div class="flex justify-between">
-                                <span class="text-gray-600">Order Number:</span>
-                                <span class="font-medium">#<?php echo str_pad($order['id'], 6, '0', STR_PAD_LEFT); ?></span>
+                                <span class="text-gray-600">Order Reference:</span>
+                                <span class="font-medium"><?php echo htmlspecialchars($order['order_reference'] ?? '#' . str_pad($order['id'], 6, '0', STR_PAD_LEFT)); ?></span>
                             </div>
                             <div class="flex justify-between">
                                 <span class="text-gray-600">Order Date:</span>
@@ -120,14 +148,30 @@ $order_items = $stmt->fetchAll();
                             </div>
                             <div class="flex justify-between">
                                 <span class="text-gray-600">Status:</span>
-                                <span class="px-2 py-1 rounded-full text-xs font-semibold <?php echo $order['status'] === 'completed' ? 'bg-green-100 text-green-800' : ($order['status'] === 'pending' ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800'); ?>">
-                                    <?php echo ucfirst($order['status']); ?>
+                                <span class="px-2 py-1 rounded-full text-xs font-semibold <?php echo $order['status'] === 'completed' ? 'bg-green-100 text-green-800' : ($order['status'] === 'pending' ? 'bg-yellow-100 text-yellow-800' : ($order['status'] === 'awaiting_verification' ? 'bg-blue-100 text-blue-800' : 'bg-red-100 text-red-800')); ?>">
+                                    <?php echo ucfirst(str_replace('_', ' ', $order['status'])); ?>
                                 </span>
                             </div>
                             <?php if ($order['payment_method']): ?>
                                 <div class="flex justify-between">
                                     <span class="text-gray-600">Payment Method:</span>
                                     <span class="font-medium"><?php echo htmlspecialchars($order['payment_method']); ?></span>
+                                </div>
+                            <?php endif; ?>
+                            <?php if ($order['transaction_reference']): ?>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600">Transaction Reference:</span>
+                                    <span class="font-medium"><?php echo htmlspecialchars($order['transaction_reference']); ?></span>
+                                </div>
+                            <?php endif; ?>
+                            <?php if ($order['download_token']): ?>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600">Download Link:</span>
+                                    <span class="font-medium text-indigo-600">
+                                        <a href="<?php echo SITE_URL; ?>/download.php?token=<?php echo htmlspecialchars($order['download_token']); ?>" target="_blank">
+                                            <?php echo htmlspecialchars($order['download_token']); ?>
+                                        </a>
+                                    </span>
                                 </div>
                             <?php endif; ?>
                         </div>
@@ -139,17 +183,21 @@ $order_items = $stmt->fetchAll();
                             <div class="flex justify-between">
                                 <span class="text-gray-600">Name:</span>
                                 <span class="font-medium">
-                                    <?php echo htmlspecialchars($order['customer_name']); ?>
-                                    <?php if ($order['anonymous_checkout']): ?>
+                                    <?php echo !empty($order['customer_name']) ? htmlspecialchars($order['customer_name']) : 'Anonymous Customer'; ?>
+                                    <?php if ($order['anonymous_checkout'] || empty($order['customer_name'])): ?>
                                         <span class="ml-2 px-2 py-1 bg-gray-100 text-gray-600 rounded-full text-xs">Anonymous</span>
                                     <?php endif; ?>
                                 </span>
                             </div>
                             <div class="flex justify-between">
                                 <span class="text-gray-600">Email:</span>
-                                <a href="mailto:<?php echo htmlspecialchars($order['customer_email']); ?>" class="font-medium text-indigo-600 hover:text-indigo-800">
-                                    <?php echo htmlspecialchars($order['customer_email']); ?>
-                                </a>
+                                <?php if (!empty($order['customer_email']) && $order['customer_email'] !== 'anonymous@webstore.com'): ?>
+                                    <a href="mailto:<?php echo htmlspecialchars($order['customer_email']); ?>" class="font-medium text-indigo-600 hover:text-indigo-800">
+                                        <?php echo htmlspecialchars($order['customer_email']); ?>
+                                    </a>
+                                <?php else: ?>
+                                    <span class="font-medium text-gray-500">Not provided</span>
+                                <?php endif; ?>
                             </div>
                             <?php if ($order['customer_phone']): ?>
                                 <div class="flex justify-between">
@@ -161,6 +209,37 @@ $order_items = $stmt->fetchAll();
                     </div>
                 </div>
             </div>
+
+            <!-- Payment Verification (for awaiting_verification status) -->
+            <?php if ($order['status'] === 'awaiting_verification'): ?>
+                <div class="bg-white rounded-lg shadow-lg p-6 mb-6">
+                    <h3 class="text-lg font-semibold mb-4">Payment Verification</h3>
+                    <?php if ($order['payment_screenshot']): ?>
+                        <div class="mb-4">
+                            <p class="text-sm text-gray-600 mb-2">Payment Screenshot:</p>
+                            <a href="../<?php echo htmlspecialchars($order['payment_screenshot']); ?>" target="_blank" class="inline-block">
+                                <img src="../<?php echo htmlspecialchars($order['payment_screenshot']); ?>" alt="Payment Screenshot" class="max-w-xs rounded border">
+                            </a>
+                        </div>
+                    <?php endif; ?>
+                    <div class="flex gap-4">
+                        <form method="POST" class="inline-block">
+                            <input type="hidden" name="action" value="approve">
+                            <button type="submit" class="bg-green-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-green-700 transition">
+                                <i class="fas fa-check mr-2"></i>
+                                Approve Order
+                            </button>
+                        </form>
+                        <form method="POST" class="inline-block" onsubmit="return confirm('Are you sure you want to reject this order?');">
+                            <input type="hidden" name="action" value="reject">
+                            <button type="submit" class="bg-red-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-red-700 transition">
+                                <i class="fas fa-times mr-2"></i>
+                                Reject Order
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            <?php endif; ?>
 
             <!-- Order Items -->
             <div class="bg-white rounded-lg shadow-lg p-6 mb-6">

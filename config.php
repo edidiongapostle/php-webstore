@@ -20,6 +20,7 @@ if (session_status() == PHP_SESSION_NONE) {
 define('SITE_NAME', 'WebStore');
 define('SITE_EMAIL', 'admin@webstore.com');
 define('CURRENCY', 'USD');
+define('SITE_URL', 'http://localhost:8000');
 
 // Error reporting
 error_reporting(E_ALL);

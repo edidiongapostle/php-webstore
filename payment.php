@@ -45,18 +45,24 @@ $pageTitle = "Payment - " . $site_name;
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['confirm_payment'])) {
     // Process the order
-    $anonymous_checkout = isset($_POST['anonymous_checkout']) ? 1 : 0;
+    $anonymous_checkout = ($_POST['anonymous_checkout'] ?? '0') === '1' ? 1 : 0;
     $name = sanitizeInput($_POST['name'] ?? '');
     $email = sanitizeInput($_POST['email'] ?? '');
     $phone = sanitizeInput($_POST['phone'] ?? '');
     $notes = sanitizeInput($_POST['notes'] ?? '');
-    
+
+    // If not anonymous but name/email are empty, treat as anonymous
+    if (!$anonymous_checkout && (empty($name) || empty($email))) {
+        $anonymous_checkout = 1;
+    }
+
     try {
         $customer_data = [
             'name' => $anonymous_checkout ? 'Anonymous Customer' : $name,
             'email' => $anonymous_checkout ? 'anonymous@webstore.com' : $email,
             'phone' => $phone,
-            'total' => $cart_total
+            'total' => $cart_total,
+            'anonymous_checkout' => $anonymous_checkout
         ];
         
         $order_id = createOrder($customer_data, $cart_items);
@@ -162,12 +168,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['confirm_payment'])) {
                             <p class="text-sm text-green-800 mb-4">
                                 Please transfer the total amount to our bank account:
                             </p>
-                            <div class="bg-white rounded p-3 border">
+                            <div class="bg-white rounded p-3 border space-y-2">
                                 <p class="font-medium">Bank: <?php echo htmlspecialchars($config['bank_name'] ?? 'Your Bank'); ?></p>
-                                <p class="font-medium">Account: <?php echo htmlspecialchars($config['account_number'] ?? '****1234'); ?></p>
+                                <p class="font-medium">Account Number: <?php echo htmlspecialchars($config['account_number'] ?? '****1234'); ?></p>
+                                <?php if (!empty($config['routing_number'])): ?>
+                                    <p class="font-medium">Routing Number: <?php echo htmlspecialchars($config['routing_number']); ?></p>
+                                <?php endif; ?>
                                 <p class="text-sm text-gray-600">Reference: Your order ID</p>
                             </div>
-                            <div class="text-xs text-gray-600">
+                            <div class="text-xs text-gray-600 mt-2">
                                 <i class="fas fa-university mr-1"></i> Bank transfer details
                             </div>
                         </div>

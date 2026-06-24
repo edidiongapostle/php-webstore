@@ -23,15 +23,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             'enable_reviews', 'enable_wishlist', 'auto_backup', 'maintenance_mode',
             'seo_title', 'seo_description', 'seo_keywords'
         ];
-        
+
+        // Get current settings from database to preserve values not being updated
+        $current_settings = [];
+        $stmt = $conn->query("SELECT setting_key, setting_value FROM settings");
+        while ($row = $stmt->fetch()) {
+            $current_settings[$row['setting_key']] = $row['setting_value'];
+        }
+
         foreach ($all_settings as $key) {
-            $value = isset($_POST['settings'][$key]) ? $_POST['settings'][$key] : '';
-            
-            // Handle checkboxes specifically
+            // Handle checkboxes specifically - if not in POST, set to '0'
             if (in_array($key, ['shipping_enabled', 'anonymous_checkout', 'crypto_payments', 'enable_reviews', 'enable_wishlist', 'auto_backup', 'maintenance_mode'])) {
                 $value = isset($_POST['settings'][$key]) ? '1' : '0';
+            } else {
+                // For other fields, only update if present in POST, otherwise keep existing value
+                if (isset($_POST['settings'][$key])) {
+                    $value = $_POST['settings'][$key];
+                } else {
+                    // Keep existing value if not in POST data
+                    $value = $current_settings[$key] ?? '';
+                }
             }
-            
+
             try {
                 $stmt = $conn->prepare("UPDATE settings SET setting_value = ?, updated_at = CURRENT_TIMESTAMP WHERE setting_key = ?");
                 $stmt->execute([$value, $key]);
@@ -39,7 +52,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $errors['general'] = 'Failed to save settings. Please try again.';
             }
         }
-        
+
         if (empty($errors)) {
             $success = 'Settings saved successfully!';
         }
@@ -150,7 +163,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             'btc_qr_code' => $btc_qr_code,
             'eth_qr_code' => $eth_qr_code,
             'ltc_qr_code' => $ltc_qr_code,
-            'enabled_coins' => $_POST['enabled_coins'] ?? []
+            'enabled_coins' => $_POST['enabled_coins'] ?? [],
+            'bank_name' => sanitizeInput($_POST['bank_name'] ?? ''),
+            'account_number' => sanitizeInput($_POST['account_number'] ?? ''),
+            'routing_number' => sanitizeInput($_POST['routing_number'] ?? '')
         ]);
         
         try {

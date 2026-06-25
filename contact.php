@@ -1,4 +1,5 @@
 <?php
+session_start();
 require_once 'config.php';
 require_once 'functions.php';
 
@@ -14,16 +15,18 @@ $errors = [];
 $success = false;
 $site_name = getSetting('site_name', 'WebStore');
 $site_email = getSetting('site_email', 'admin@webstore.com');
+$seo_title = getSetting('seo_title', 'Premium Websites for Sale');
+$seo_description = getSetting('seo_description', 'Buy premium websites and templates for your business');
+$seo_keywords = getSetting('seo_keywords', 'websites, templates, premium, business');
+
 $pageTitle = "Contact - " . $site_name;
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    // Validate form data
     $name = sanitizeInput($_POST['name'] ?? '');
     $email = sanitizeInput($_POST['email'] ?? '');
     $subject = sanitizeInput($_POST['subject'] ?? '');
     $message = sanitizeInput($_POST['message'] ?? '');
     
-    // Validation
     if (empty($name)) {
         $errors['name'] = 'Name is required';
     }
@@ -46,7 +49,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     
     if (empty($errors)) {
         try {
-            // Store contact message in database
             $stmt = $conn->prepare("
                 INSERT INTO contact_messages (name, email, subject, message, created_at) 
                 VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)
@@ -54,277 +56,561 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $stmt->execute([$name, $email, $subject, $message]);
             
             $success = true;
-            
-            // Clear form
             $name = $email = $subject = $message = '';
         } catch (Exception $e) {
             $errors['general'] = 'Failed to send message. Please try again.';
         }
     }
 }
-
-$pageTitle = "Contact Us - WebStore";
 ?>
 
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?php echo $pageTitle; ?></title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title><?php echo htmlspecialchars($pageTitle); ?></title>
+  <meta name="description" content="<?php echo htmlspecialchars($seo_description); ?>">
+  <meta name="keywords" content="<?php echo htmlspecialchars($seo_keywords); ?>">
+  <meta name="author" content="<?php echo htmlspecialchars($site_name); ?>">
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,600;0,9..144,700;1,9..144,300;1,9..144,600&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --white:   #FFFFFF;
+      --black:   #0D0D0D;
+      --grey:    #6B6B6B;
+      --light:   #F5F5F3;
+      --border:  #E4E4E0;
+      --accent:  #1A3BFF;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--white);
+      color: var(--black);
+      line-height: 1.6;
+    }
+
+    /* NAV */
+    nav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 1000;
+      background: rgba(255,255,255,0.95);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--border);
+      padding: 1.25rem 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .nav-logo {
+      font-family: 'Fraunces', serif;
+      font-size: 1.5rem;
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      color: var(--black);
+      text-decoration: none;
+    }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 2rem;
+      list-style: none;
+    }
+
+    .nav-links a {
+      font-size: 0.9rem;
+      font-weight: 500;
+      color: var(--grey);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+
+    .nav-links a:hover {
+      color: var(--black);
+    }
+
+    .nav-cta {
+      background: var(--black);
+      color: var(--white) !important;
+      padding: 0.6rem 1.2rem;
+      border-radius: 100px;
+      transition: background 0.2s;
+    }
+
+    .nav-cta:hover {
+      background: #1a1a1a;
+    }
+
+    .nav-hamburger {
+      display: none;
+      flex-direction: column;
+      gap: 0.35rem;
+      background: none;
+      border: none;
+      cursor: pointer;
+    }
+
+    .nav-hamburger span {
+      width: 24px;
+      height: 2px;
+      background: var(--black);
+      transition: 0.2s;
+    }
+
+    @media (max-width: 768px) {
+      .nav-links {
+        position: fixed;
+        top: 70px;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        flex-direction: column;
+        background: var(--white);
+        padding: 2rem;
+        gap: 1.5rem;
+        transform: translateX(100%);
+        transition: transform 0.3s ease;
+      }
+
+      .nav-links.open {
+        transform: translateX(0);
+      }
+
+      .nav-hamburger {
+        display: flex;
+      }
+    }
+
+    /* HERO */
+    .hero {
+      padding: 8rem 2rem 4rem;
+      background: var(--light);
+      text-align: center;
+    }
+
+    .hero h1 {
+      font-family: 'Fraunces', serif;
+      font-size: clamp(2.5rem, 6vw, 4rem);
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      line-height: 1.1;
+      margin-bottom: 1.5rem;
+    }
+
+    .hero p {
+      font-size: 1.1rem;
+      color: var(--grey);
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    /* CONTACT */
+    .contact-container {
+      max-width: 1200px;
+      margin: 4rem auto;
+      padding: 0 2rem;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 4rem;
+    }
+
+    @media (max-width: 768px) {
+      .contact-container {
+        grid-template-columns: 1fr;
+        gap: 2rem;
+      }
+    }
+
+    .contact-info h2 {
+      font-family: 'Fraunces', serif;
+      font-size: 1.75rem;
+      font-weight: 700;
+      margin-bottom: 1rem;
+    }
+
+    .contact-info p {
+      color: var(--grey);
+      margin-bottom: 2rem;
+    }
+
+    .info-item {
+      display: flex;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .info-icon {
+      width: 48px;
+      height: 48px;
+      background: var(--accent);
+      color: white;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .info-text h4 {
+      font-weight: 600;
+      margin-bottom: 0.25rem;
+    }
+
+    .info-text p {
+      color: var(--grey);
+      font-size: 0.9rem;
+      margin: 0;
+    }
+
+    .faq-section {
+      margin-top: 3rem;
+    }
+
+    .faq-section h3 {
+      font-family: 'Fraunces', serif;
+      font-size: 1.5rem;
+      font-weight: 700;
+      margin-bottom: 1.5rem;
+    }
+
+    .faq-item {
+      margin-bottom: 1rem;
+    }
+
+    .faq-item h4 {
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+    }
+
+    .faq-item p {
+      color: var(--grey);
+      font-size: 0.9rem;
+    }
+
+    /* FORM */
+    .form-card {
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 2rem;
+    }
+
+    .form-card h2 {
+      font-family: 'Fraunces', serif;
+      font-size: 1.75rem;
+      font-weight: 700;
+      margin-bottom: 1.5rem;
+    }
+
+    .success-message {
+      background: #DCFCE7;
+      color: #166534;
+      padding: 1rem;
+      border-radius: 8px;
+      margin-bottom: 1.5rem;
+    }
+
+    .error-message {
+      background: #FEE2E2;
+      color: #991B1B;
+      padding: 1rem;
+      border-radius: 8px;
+      margin-bottom: 1.5rem;
+    }
+
+    .form-group {
+      margin-bottom: 1.5rem;
+    }
+
+    .form-group label {
+      display: block;
+      font-weight: 500;
+      margin-bottom: 0.5rem;
+      font-size: 0.9rem;
+    }
+
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+      width: 100%;
+      padding: 0.85rem;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-family: inherit;
+      font-size: 0.95rem;
+      transition: border-color 0.2s;
+    }
+
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus {
+      outline: none;
+      border-color: var(--accent);
+    }
+
+    .form-group .error {
+      color: #DC2626;
+      font-size: 0.85rem;
+      margin-top: 0.5rem;
+    }
+
+    .form-group .hint {
+      color: var(--grey);
+      font-size: 0.8rem;
+      margin-top: 0.5rem;
+    }
+
+    .submit-btn {
+      width: 100%;
+      background: var(--black);
+      color: white;
+      padding: 0.85rem 2rem;
+      border: none;
+      border-radius: 100px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .submit-btn:hover {
+      background: #1a1a1a;
+    }
+
+    .form-footer {
+      margin-top: 1.5rem;
+      padding: 1rem;
+      background: var(--light);
+      border-radius: 8px;
+      text-align: center;
+      font-size: 0.85rem;
+      color: var(--grey);
+    }
+
+    /* FOOTER */
+    footer {
+      background: var(--black);
+      color: var(--white);
+      padding: 3rem 2rem;
+      text-align: center;
+    }
+
+    .footer-logo {
+      font-family: 'Fraunces', serif;
+      font-size: 1.25rem;
+      color: var(--white);
+      text-decoration: none;
+      display: block;
+      margin-bottom: 1.5rem;
+    }
+
+    .footer-links {
+      display: flex;
+      justify-content: center;
+      gap: 2rem;
+      list-style: none;
+      margin-bottom: 1.5rem;
+      flex-wrap: wrap;
+    }
+
+    .footer-links a {
+      color: var(--grey);
+      text-decoration: none;
+      font-size: 0.9rem;
+      transition: color 0.2s;
+    }
+
+    .footer-links a:hover {
+      color: var(--white);
+    }
+
+    .footer-copy {
+      color: var(--grey);
+      font-size: 0.85rem;
+    }
+  </style>
 </head>
-<body class="bg-gray-50">
-    <!-- Navigation -->
-    <nav class="bg-white shadow-lg sticky top-0 z-50">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between h-16">
-                <div class="flex items-center">
-                    <h1 class="text-2xl font-bold text-indigo-600"><?php echo htmlspecialchars($site_name); ?></h1>
-                </div>
-                <div class="flex items-center space-x-4">
-                    <a href="index.php" class="text-gray-700 hover:text-indigo-600 px-3 py-2 rounded-md text-sm font-medium hidden md:block">Home</a>
-                    <a href="cart.php" class="relative text-gray-700 hover:text-indigo-600 px-3 py-2 rounded-md text-sm font-medium hidden md:block">
-                        <i class="fas fa-shopping-cart"></i>
-                        <?php 
-                        $cart_count = getCartCount();
-                        if ($cart_count > 0): 
-                        ?>
-                            <span class="absolute -top-1 -right-1 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs">
-                                <?php echo $cart_count; ?>
-                            </span>
-                        <?php endif; ?>
-                    </a>
-                    <a href="privacy.php" class="text-gray-700 hover:text-indigo-600 px-3 py-2 rounded-md text-sm font-medium hidden md:block">Privacy</a>
-                    <a href="admin/login.php" class="bg-indigo-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-indigo-700 hidden md:block">Admin</a>
-                </div>
-                
-                <!-- Mobile menu button -->
-                <div class="md:hidden flex items-center">
-                    <button id="mobile-menu-button" class="text-gray-700 hover:text-indigo-600 focus:outline-none focus:text-indigo-600">
-                        <i class="fas fa-bars text-xl"></i>
-                    </button>
-                </div>
-            </div>
-            
-            <!-- Mobile Navigation -->
-            <div id="mobile-menu" class="hidden md:hidden pb-4">
-                <div class="flex flex-col space-y-2">
-                    <a href="index.php" class="text-gray-700 hover:text-indigo-600 px-3 py-2 rounded-md text-sm font-medium">Home</a>
-                    <a href="cart.php" class="relative text-gray-700 hover:text-indigo-600 px-3 py-2 rounded-md text-sm font-medium">
-                        <i class="fas fa-shopping-cart mr-2"></i>
-                        Cart
-                        <?php 
-                        $cart_count = getCartCount();
-                        if ($cart_count > 0): 
-                        ?>
-                            <span class="ml-2 bg-red-500 text-white rounded-full px-2 py-1 text-xs">
-                                <?php echo $cart_count; ?>
-                            </span>
-                        <?php endif; ?>
-                    </a>
-                    <a href="privacy.php" class="text-gray-700 hover:text-indigo-600 px-3 py-2 rounded-md text-sm font-medium">Privacy</a>
-                    <a href="admin/login.php" class="bg-indigo-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-indigo-700">Admin</a>
-                </div>
-            </div>
-        </div>
-    </nav>
+<body>
 
-    <!-- Contact Content -->
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <h2 class="text-4xl font-bold text-center mb-12 text-gray-900">Contact Us</h2>
-        
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-12">
-            <!-- Contact Information -->
-            <div class="space-y-8">
-                <div class="bg-white rounded-lg shadow-lg p-8">
-                    <h3 class="text-2xl font-semibold mb-6 text-gray-900">Get in Touch</h3>
-                    <p class="text-gray-600 mb-8">
-                        We're here to help! Whether you have questions about our websites, need support with your purchase, or want to discuss custom solutions, feel free to reach out.
-                    </p>
-                    
-                    <div class="space-y-6">
-                        <div class="flex items-start">
-                            <div class="flex-shrink-0">
-                                <div class="flex items-center justify-center h-12 w-12 rounded-md bg-indigo-600 text-white">
-                                    <i class="fas fa-envelope"></i>
-                                </div>
-                            </div>
-                            <div class="ml-4">
-                                <h4 class="text-lg font-medium text-gray-900">Email</h4>
-                                <p class="text-gray-600"><?php echo htmlspecialchars($site_email); ?></p>
-                                <p class="text-sm text-gray-500 mt-1">We respond within 24 hours</p>
-                            </div>
-                        </div>
-                        
-                        <div class="flex items-start">
-                            <div class="flex-shrink-0">
-                                <div class="flex items-center justify-center h-12 w-12 rounded-md bg-indigo-600 text-white">
-                                    <i class="fas fa-clock"></i>
-                                </div>
-                            </div>
-                            <div class="ml-4">
-                                <h4 class="text-lg font-medium text-gray-900">Business Hours</h4>
-                                <p class="text-gray-600">Monday - Friday: 9:00 AM - 6:00 PM EST</p>
-                                <p class="text-gray-600">Saturday: 10:00 AM - 4:00 PM EST</p>
-                                <p class="text-gray-600">Sunday: Closed</p>
-                            </div>
-                        </div>
-                        
-                        <div class="flex items-start">
-                            <div class="flex-shrink-0">
-                                <div class="flex items-center justify-center h-12 w-12 rounded-md bg-indigo-600 text-white">
-                                    <i class="fas fa-shield-alt"></i>
-                                </div>
-                            </div>
-                            <div class="ml-4">
-                                <h4 class="text-lg font-medium text-gray-900">Privacy & Security</h4>
-                                <p class="text-gray-600">Your information is secure with us. Read our <a href="privacy.php" class="text-indigo-600 hover:text-indigo-800">Privacy Policy</a> for details.</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- FAQ Section -->
-                <div class="bg-white rounded-lg shadow-lg p-8">
-                    <h3 class="text-2xl font-semibold mb-6 text-gray-900">Frequently Asked Questions</h3>
-                    <div class="space-y-4">
-                        <div>
-                            <h4 class="font-medium text-gray-900 mb-2">What payment methods do you accept?</h4>
-                            <p class="text-gray-600">We accept credit/debit cards, PayPal, bank transfers, and various cryptocurrencies including Bitcoin and Ethereum.</p>
-                        </div>
-                        <div>
-                            <h4 class="font-medium text-gray-900 mb-2">Can I purchase anonymously?</h4>
-                            <p class="text-gray-600">Yes! We offer anonymous checkout options that don't require personal information, especially when paying with cryptocurrency.</p>
-                        </div>
-                        <div>
-                            <h4 class="font-medium text-gray-900 mb-2">How do I receive my purchase?</h4>
-                            <p class="text-gray-600">After payment, you'll receive instant download links and access credentials via email.</p>
-                        </div>
-                        <div>
-                            <h4 class="font-medium text-gray-900 mb-2">Do you offer refunds?</h4>
-                            <p class="text-gray-600">Yes, we offer a 30-day money-back guarantee if you're not satisfied with your purchase.</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Contact Form -->
-            <div class="bg-white rounded-lg shadow-lg p-8">
-                <h3 class="text-2xl font-semibold mb-6 text-gray-900">Send us a Message</h3>
-                
-                <?php if ($success): ?>
-                    <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-6">
-                        <i class="fas fa-check-circle mr-2"></i>
-                        Thank you for your message! We'll get back to you within 24 hours.
-                    </div>
-                <?php endif; ?>
-                
-                <?php if (isset($errors['general'])): ?>
-                    <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-6">
-                        <?php echo $errors['general']; ?>
-                    </div>
-                <?php endif; ?>
-                
-                <form method="POST" class="space-y-6">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Full Name *</label>
-                        <input type="text" name="name" value="<?php echo htmlspecialchars($name ?? ''); ?>" 
-                               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                        <?php if (isset($errors['name'])): ?>
-                            <p class="text-red-500 text-sm mt-1"><?php echo $errors['name']; ?></p>
-                        <?php endif; ?>
-                    </div>
-                    
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Email Address *</label>
-                        <input type="email" name="email" value="<?php echo htmlspecialchars($email ?? ''); ?>" 
-                               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                        <?php if (isset($errors['email'])): ?>
-                            <p class="text-red-500 text-sm mt-1"><?php echo $errors['email']; ?></p>
-                        <?php endif; ?>
-                    </div>
-                    
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Subject *</label>
-                        <select name="subject" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                            <option value="">Select a topic</option>
-                            <option value="General Inquiry" <?php echo (isset($subject) && $subject === 'General Inquiry') ? 'selected' : ''; ?>>General Inquiry</option>
-                            <option value="Technical Support" <?php echo (isset($subject) && $subject === 'Technical Support') ? 'selected' : ''; ?>>Technical Support</option>
-                            <option value="Billing Question" <?php echo (isset($subject) && $subject === 'Billing Question') ? 'selected' : ''; ?>>Billing Question</option>
-                            <option value="Custom Website" <?php echo (isset($subject) && $subject === 'Custom Website') ? 'selected' : ''; ?>>Custom Website Request</option>
-                            <option value="Partnership" <?php echo (isset($subject) && $subject === 'Partnership') ? 'selected' : ''; ?>>Partnership Opportunity</option>
-                            <option value="Other" <?php echo (isset($subject) && $subject === 'Other') ? 'selected' : ''; ?>>Other</option>
-                        </select>
-                        <?php if (isset($errors['subject'])): ?>
-                            <p class="text-red-500 text-sm mt-1"><?php echo $errors['subject']; ?></p>
-                        <?php endif; ?>
-                    </div>
-                    
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Message *</label>
-                        <textarea name="message" rows="6" 
-                                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                                  placeholder="Please describe your question or request in detail..."><?php echo htmlspecialchars($message ?? ''); ?></textarea>
-                        <?php if (isset($errors['message'])): ?>
-                            <p class="text-red-500 text-sm mt-1"><?php echo $errors['message']; ?></p>
-                        <?php endif; ?>
-                        <p class="text-sm text-gray-500 mt-1">Minimum 10 characters</p>
-                    </div>
-                    
-                    <button type="submit" class="w-full bg-indigo-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-indigo-700 transition">
-                        <i class="fas fa-paper-plane mr-2"></i>
-                        Send Message
-                    </button>
-                </form>
-                
-                <div class="mt-6 p-4 bg-gray-50 rounded-lg">
-                    <p class="text-sm text-gray-600 text-center">
-                        <i class="fas fa-lock mr-1"></i>
-                        Your information is secure and will never be shared with third parties.
-                    </p>
-                </div>
-            </div>
+  <!-- NAV -->
+  <nav>
+    <a href="index.php" class="nav-logo"><?php echo htmlspecialchars($site_name); ?></a>
+    <ul class="nav-links" id="navLinks">
+      <li><a href="index.php">Home</a></li>
+      <li><a href="about.php">About</a></li>
+      <li><a href="blog.php">Blog</a></li>
+      <li><a href="contact.php">Contact</a></li>
+      <li><a href="cart.php" class="relative">
+        <i class="fas fa-shopping-cart"></i>
+        <?php
+        $cart_count = getCartCount();
+        if ($cart_count > 0):
+        ?>
+          <span style="position:absolute;top:-4px;right:-8px;background:#EF4444;color:white;border-radius:50%;width:18px;height:18px;font-size:10px;display:flex;align-items:center;justify-content:center;"><?php echo $cart_count; ?></span>
+        <?php endif; ?>
+      </a></li>
+      <li><a href="admin/login.php" class="nav-cta">Admin</a></li>
+    </ul>
+    <button class="nav-hamburger" id="hamburger" aria-label="Menu">
+      <span></span><span></span><span></span>
+    </button>
+  </nav>
+
+  <!-- HERO -->
+  <section class="hero">
+    <h1>Contact Us</h1>
+    <p>We're here to help. Send us a message and we'll get back to you within 24 hours.</p>
+  </section>
+
+  <!-- CONTACT -->
+  <div class="contact-container">
+    <div class="contact-info">
+      <h2>Get in Touch</h2>
+      <p>Whether you have questions about our websites, need support with your purchase, or want to discuss custom solutions, feel free to reach out.</p>
+      
+      <div class="info-item">
+        <div class="info-icon"><i class="fas fa-envelope"></i></div>
+        <div class="info-text">
+          <h4>Email</h4>
+          <p><?php echo htmlspecialchars($site_email); ?></p>
+          <p>We respond within 24 hours</p>
         </div>
+      </div>
+      
+      <div class="info-item">
+        <div class="info-icon"><i class="fas fa-clock"></i></div>
+        <div class="info-text">
+          <h4>Business Hours</h4>
+          <p>Monday - Friday: 9:00 AM - 6:00 PM EST</p>
+          <p>Saturday: 10:00 AM - 4:00 PM EST</p>
+        </div>
+      </div>
+      
+      <div class="info-item">
+        <div class="info-icon"><i class="fas fa-shield-alt"></i></div>
+        <div class="info-text">
+          <h4>Privacy & Security</h4>
+          <p>Your information is secure with us. <a href="privacy.php" style="color:var(--accent);">Read our Privacy Policy</a></p>
+        </div>
+      </div>
+
+      <div class="faq-section">
+        <h3>Frequently Asked Questions</h3>
+        <div class="faq-item">
+          <h4>What payment methods do you accept?</h4>
+          <p>We accept credit/debit cards, PayPal, bank transfers, and various cryptocurrencies including Bitcoin and Ethereum.</p>
+        </div>
+        <div class="faq-item">
+          <h4>Can I purchase anonymously?</h4>
+          <p>Yes! We offer anonymous checkout options that don't require personal information, especially when paying with cryptocurrency.</p>
+        </div>
+        <div class="faq-item">
+          <h4>How do I receive my purchase?</h4>
+          <p>After payment, you'll receive instant download links and access credentials via email.</p>
+        </div>
+      </div>
     </div>
-
-    <!-- Footer -->
-    <footer class="bg-gray-800 text-white py-8">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-                <div>
-                    <h3 class="text-lg font-semibold mb-4"><?php echo htmlspecialchars($site_name); ?></h3>
-                    <p class="text-gray-400">Premium websites for your business needs</p>
-                </div>
-                <div>
-                    <h3 class="text-lg font-semibold mb-4">Quick Links</h3>
-                    <ul class="space-y-2">
-                        <li><a href="index.php" class="text-gray-400 hover:text-white">Home</a></li>
-                        <li><a href="privacy.php" class="text-gray-400 hover:text-white">Privacy Policy</a></li>
-                        <li><a href="contact.php" class="text-gray-400 hover:text-white">Contact</a></li>
-                    </ul>
-                </div>
-                <div>
-                    <h3 class="text-lg font-semibold mb-4">Legal</h3>
-                    <ul class="space-y-2">
-                        <li><a href="privacy.php" class="text-gray-400 hover:text-white">Privacy Policy</a></li>
-                        <li><a href="#" class="text-gray-400 hover:text-white">Terms of Service</a></li>
-                    </ul>
-                </div>
-            </div>
-            <div class="mt-8 pt-8 border-t border-gray-700 text-center">
-                <p>&copy; <?php echo date('Y'); ?> <?php echo htmlspecialchars($site_name); ?>. All rights reserved.</p>
-            </div>
+    
+    <div class="form-card">
+      <h2>Send us a Message</h2>
+      
+      <?php if ($success): ?>
+        <div class="success-message">
+          <i class="fas fa-check-circle"></i> Thank you for your message! We'll get back to you within 24 hours.
         </div>
-    </footer>
+      <?php endif; ?>
+      
+      <?php if (isset($errors['general'])): ?>
+        <div class="error-message"><?php echo $errors['general']; ?></div>
+      <?php endif; ?>
+      
+      <form method="POST">
+        <div class="form-group">
+          <label>Full Name *</label>
+          <input type="text" name="name" value="<?php echo htmlspecialchars($name ?? ''); ?>">
+          <?php if (isset($errors['name'])): ?>
+            <div class="error"><?php echo $errors['name']; ?></div>
+          <?php endif; ?>
+        </div>
+        
+        <div class="form-group">
+          <label>Email Address *</label>
+          <input type="email" name="email" value="<?php echo htmlspecialchars($email ?? ''); ?>">
+          <?php if (isset($errors['email'])): ?>
+            <div class="error"><?php echo $errors['email']; ?></div>
+          <?php endif; ?>
+        </div>
+        
+        <div class="form-group">
+          <label>Subject *</label>
+          <select name="subject">
+            <option value="">Select a topic</option>
+            <option value="General Inquiry" <?php echo (isset($subject) && $subject === 'General Inquiry') ? 'selected' : ''; ?>>General Inquiry</option>
+            <option value="Technical Support" <?php echo (isset($subject) && $subject === 'Technical Support') ? 'selected' : ''; ?>>Technical Support</option>
+            <option value="Billing Question" <?php echo (isset($subject) && $subject === 'Billing Question') ? 'selected' : ''; ?>>Billing Question</option>
+            <option value="Custom Website" <?php echo (isset($subject) && $subject === 'Custom Website') ? 'selected' : ''; ?>>Custom Website Request</option>
+            <option value="Partnership" <?php echo (isset($subject) && $subject === 'Partnership') ? 'selected' : ''; ?>>Partnership Opportunity</option>
+            <option value="Other" <?php echo (isset($subject) && $subject === 'Other') ? 'selected' : ''; ?>>Other</option>
+          </select>
+          <?php if (isset($errors['subject'])): ?>
+            <div class="error"><?php echo $errors['subject']; ?></div>
+          <?php endif; ?>
+        </div>
+        
+        <div class="form-group">
+          <label>Message *</label>
+          <textarea name="message" rows="6" placeholder="Please describe your question or request in detail..."><?php echo htmlspecialchars($message ?? ''); ?></textarea>
+          <?php if (isset($errors['message'])): ?>
+            <div class="error"><?php echo $errors['message']; ?></div>
+          <?php endif; ?>
+          <div class="hint">Minimum 10 characters</div>
+        </div>
+        
+        <button type="submit" class="submit-btn">
+          <i class="fas fa-paper-plane"></i> Send Message
+        </button>
+      </form>
+      
+      <div class="form-footer">
+        <i class="fas fa-lock"></i> Your information is secure and will never be shared with third parties.
+      </div>
+    </div>
+  </div>
 
-    <script>
-        // Mobile menu toggle
-        document.getElementById('mobile-menu-button').addEventListener('click', function() {
-            const mobileMenu = document.getElementById('mobile-menu');
-            mobileMenu.classList.toggle('hidden');
-        });
-    </script>
+  <!-- FOOTER -->
+  <footer>
+    <a href="index.php" class="footer-logo"><?php echo htmlspecialchars($site_name); ?></a>
+    <ul class="footer-links">
+      <li><a href="index.php">Home</a></li>
+      <li><a href="about.php">About</a></li>
+      <li><a href="blog.php">Blog</a></li>
+      <li><a href="contact.php">Contact</a></li>
+      <li><a href="cart.php">Cart</a></li>
+      <li><a href="privacy.php">Privacy Policy</a></li>
+      <li><a href="terms.php">Terms of Use</a></li>
+    </ul>
+    <span class="footer-copy">© <?php echo date('Y'); ?> <?php echo htmlspecialchars($site_name); ?>. All rights reserved.</span>
+  </footer>
+
+  <script>
+    const hamburger = document.getElementById('hamburger');
+    const navLinks = document.getElementById('navLinks');
+    hamburger.addEventListener('click', () => {
+      navLinks.classList.toggle('open');
+    });
+    navLinks.querySelectorAll('a').forEach(a => {
+      a.addEventListener('click', () => navLinks.classList.remove('open'));
+    });
+  </script>
 </body>
 </html>

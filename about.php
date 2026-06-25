@@ -1,4 +1,5 @@
 <?php
+session_start();
 require_once 'config.php';
 require_once 'functions.php';
 
@@ -11,155 +12,390 @@ if ($maintenance_mode === '1' && !isset($_SESSION['admin_logged_in'])) {
 }
 
 $site_name = getSetting('site_name', 'WebStore');
+$seo_title = getSetting('seo_title', 'Premium Websites for Sale');
+$seo_description = getSetting('seo_description', 'Buy premium websites and templates for your business');
+$seo_keywords = getSetting('seo_keywords', 'websites, templates, premium, business');
+
 $pageTitle = "About - " . $site_name;
 ?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?php echo $pageTitle; ?></title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title><?php echo htmlspecialchars($pageTitle); ?></title>
+  <meta name="description" content="<?php echo htmlspecialchars($seo_description); ?>">
+  <meta name="keywords" content="<?php echo htmlspecialchars($seo_keywords); ?>">
+  <meta name="author" content="<?php echo htmlspecialchars($site_name); ?>">
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,600;0,9..144,700;1,9..144,300;1,9..144,600&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --white:   #FFFFFF;
+      --black:   #0D0D0D;
+      --grey:    #6B6B6B;
+      --light:   #F5F5F3;
+      --border:  #E4E4E0;
+      --accent:  #1A3BFF;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--white);
+      color: var(--black);
+      line-height: 1.6;
+    }
+
+    /* NAV */
+    nav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 1000;
+      background: rgba(255,255,255,0.95);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--border);
+      padding: 1.25rem 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .nav-logo {
+      font-family: 'Fraunces', serif;
+      font-size: 1.5rem;
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      color: var(--black);
+      text-decoration: none;
+    }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 2rem;
+      list-style: none;
+    }
+
+    .nav-links a {
+      font-size: 0.9rem;
+      font-weight: 500;
+      color: var(--grey);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+
+    .nav-links a:hover {
+      color: var(--black);
+    }
+
+    .nav-cta {
+      background: var(--black);
+      color: var(--white) !important;
+      padding: 0.6rem 1.2rem;
+      border-radius: 100px;
+      transition: background 0.2s;
+    }
+
+    .nav-cta:hover {
+      background: #1a1a1a;
+    }
+
+    .nav-hamburger {
+      display: none;
+      flex-direction: column;
+      gap: 0.35rem;
+      background: none;
+      border: none;
+      cursor: pointer;
+    }
+
+    .nav-hamburger span {
+      width: 24px;
+      height: 2px;
+      background: var(--black);
+      transition: 0.2s;
+    }
+
+    @media (max-width: 768px) {
+      .nav-links {
+        position: fixed;
+        top: 70px;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        flex-direction: column;
+        background: var(--white);
+        padding: 2rem;
+        gap: 1.5rem;
+        transform: translateX(100%);
+        transition: transform 0.3s ease;
+      }
+
+      .nav-links.open {
+        transform: translateX(0);
+      }
+
+      .nav-hamburger {
+        display: flex;
+      }
+    }
+
+    /* HERO */
+    .hero {
+      padding: 8rem 2rem 4rem;
+      background: var(--light);
+      text-align: center;
+    }
+
+    .hero h1 {
+      font-family: 'Fraunces', serif;
+      font-size: clamp(2.5rem, 6vw, 4rem);
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      line-height: 1.1;
+      margin-bottom: 1.5rem;
+    }
+
+    .hero p {
+      font-size: 1.1rem;
+      color: var(--grey);
+      max-width: 600px;
+      margin: 0 auto 2rem;
+    }
+
+    /* CONTENT */
+    .content {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 4rem 2rem;
+    }
+
+    .section {
+      margin-bottom: 4rem;
+    }
+
+    .section h2 {
+      font-family: 'Fraunces', serif;
+      font-size: 2rem;
+      font-weight: 700;
+      letter-spacing: -0.025em;
+      margin-bottom: 1.5rem;
+    }
+
+    .section p {
+      color: var(--grey);
+      line-height: 1.8;
+      margin-bottom: 1rem;
+    }
+
+    .features {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 2rem;
+      margin-top: 2rem;
+    }
+
+    .feature {
+      padding: 1.5rem;
+      background: var(--light);
+      border-radius: 12px;
+    }
+
+    .feature h3 {
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+    }
+
+    .feature p {
+      font-size: 0.9rem;
+      color: var(--grey);
+    }
+
+    .cta-box {
+      background: var(--black);
+      color: var(--white);
+      padding: 3rem;
+      border-radius: 16px;
+      text-align: center;
+      margin-top: 3rem;
+    }
+
+    .cta-box h3 {
+      font-family: 'Fraunces', serif;
+      font-size: 1.75rem;
+      margin-bottom: 1rem;
+    }
+
+    .cta-box a {
+      display: inline-block;
+      background: var(--white);
+      color: var(--black);
+      padding: 0.85rem 2rem;
+      border-radius: 100px;
+      text-decoration: none;
+      font-weight: 600;
+      margin-top: 1.5rem;
+    }
+
+    /* FOOTER */
+    footer {
+      background: var(--black);
+      color: var(--white);
+      padding: 3rem 2rem;
+      text-align: center;
+    }
+
+    .footer-logo {
+      font-family: 'Fraunces', serif;
+      font-size: 1.25rem;
+      color: var(--white);
+      text-decoration: none;
+      display: block;
+      margin-bottom: 1.5rem;
+    }
+
+    .footer-links {
+      display: flex;
+      justify-content: center;
+      gap: 2rem;
+      list-style: none;
+      margin-bottom: 1.5rem;
+      flex-wrap: wrap;
+    }
+
+    .footer-links a {
+      color: var(--grey);
+      text-decoration: none;
+      font-size: 0.9rem;
+      transition: color 0.2s;
+    }
+
+    .footer-links a:hover {
+      color: var(--white);
+    }
+
+    .footer-copy {
+      color: var(--grey);
+      font-size: 0.85rem;
+    }
+  </style>
 </head>
-<body class="bg-gray-50">
-    <!-- Navigation -->
-    <nav class="bg-white shadow-lg sticky top-0 z-50">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between h-16">
-                <div class="flex items-center">
-                    <a href="index.php" class="text-2xl font-bold text-indigo-600"><?php echo htmlspecialchars($site_name); ?></a>
-                </div>
-                <div class="hidden md:flex items-center space-x-4">
-                    <a href="index.php" class="text-gray-700 hover:text-indigo-600 px-3 py-2 rounded-md text-sm font-medium">Home</a>
-                    <a href="about.php" class="text-indigo-600 px-3 py-2 rounded-md text-sm font-medium">About</a>
-                    <a href="blog.php" class="text-gray-700 hover:text-indigo-600 px-3 py-2 rounded-md text-sm font-medium">Blog</a>
-                    <a href="cart.php" class="text-gray-700 hover:text-indigo-600 px-3 py-2 rounded-md text-sm font-medium">Cart</a>
-                </div>
-                <div class="flex items-center md:hidden">
-                    <button id="mobileMenuBtn" class="text-gray-700 hover:text-indigo-600 px-3 py-2">
-                        <i class="fas fa-bars text-xl"></i>
-                    </button>
-                </div>
-            </div>
-        </div>
-        <!-- Mobile Menu -->
-        <div id="mobileMenu" class="hidden md:hidden bg-white border-t">
-            <a href="index.php" class="block px-4 py-3 text-gray-700 hover:bg-gray-50">Home</a>
-            <a href="about.php" class="block px-4 py-3 text-indigo-600 bg-indigo-50">About</a>
-            <a href="blog.php" class="block px-4 py-3 text-gray-700 hover:bg-gray-50">Blog</a>
-            <a href="cart.php" class="block px-4 py-3 text-gray-700 hover:bg-gray-50">Cart</a>
-        </div>
-    </nav>
+<body>
 
-    <!-- About Content -->
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div class="max-w-4xl mx-auto">
-            <h1 class="text-4xl font-bold mb-8 text-center">About <?php echo htmlspecialchars($site_name); ?></h1>
+  <!-- NAV -->
+  <nav>
+    <a href="index.php" class="nav-logo"><?php echo htmlspecialchars($site_name); ?></a>
+    <ul class="nav-links" id="navLinks">
+      <li><a href="index.php">Home</a></li>
+      <li><a href="about.php">About</a></li>
+      <li><a href="blog.php">Blog</a></li>
+      <li><a href="contact.php">Contact</a></li>
+      <li><a href="cart.php" class="relative">
+        <i class="fas fa-shopping-cart"></i>
+        <?php
+        $cart_count = getCartCount();
+        if ($cart_count > 0):
+        ?>
+          <span style="position:absolute;top:-4px;right:-8px;background:#EF4444;color:white;border-radius:50%;width:18px;height:18px;font-size:10px;display:flex;align-items:center;justify-content:center;"><?php echo $cart_count; ?></span>
+        <?php endif; ?>
+      </a></li>
+      <li><a href="admin/login.php" class="nav-cta">Admin</a></li>
+    </ul>
+    <button class="nav-hamburger" id="hamburger" aria-label="Menu">
+      <span></span><span></span><span></span>
+    </button>
+  </nav>
 
-            <div class="bg-white rounded-lg shadow-lg p-8 mb-8">
-                <h2 class="text-2xl font-semibold mb-4">Our Mission</h2>
-                <p class="text-gray-700 mb-6">
-                    <?php echo htmlspecialchars($site_name); ?> is dedicated to providing high-quality digital products and services to our customers. We believe in making premium digital assets accessible to everyone, with a focus on quality, security, and customer satisfaction.
-                </p>
+  <!-- HERO -->
+  <section class="hero">
+    <h1>About Us</h1>
+    <p><?php echo htmlspecialchars($site_name); ?> is dedicated to providing high-quality digital products and services to our customers.</p>
+  </section>
 
-                <h2 class="text-2xl font-semibold mb-4">What We Offer</h2>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                    <div class="flex items-start">
-                        <i class="fas fa-check-circle text-green-500 mt-1 mr-3"></i>
-                        <div>
-                            <h3 class="font-semibold">Premium Websites</h3>
-                            <p class="text-gray-600 text-sm">High-quality, professionally designed websites ready for use.</p>
-                        </div>
-                    </div>
-                    <div class="flex items-start">
-                        <i class="fas fa-check-circle text-green-500 mt-1 mr-3"></i>
-                        <div>
-                            <h3 class="font-semibold">Secure Payments</h3>
-                            <p class="text-gray-600 text-sm">Multiple payment options with bank-level security.</p>
-                        </div>
-                    </div>
-                    <div class="flex items-start">
-                        <i class="fas fa-check-circle text-green-500 mt-1 mr-3"></i>
-                        <div>
-                            <h3 class="font-semibold">Instant Delivery</h3>
-                            <p class="text-gray-600 text-sm">Get your purchases immediately after payment verification.</p>
-                        </div>
-                    </div>
-                    <div class="flex items-start">
-                        <i class="fas fa-check-circle text-green-500 mt-1 mr-3"></i>
-                        <div>
-                            <h3 class="font-semibold">24/7 Support</h3>
-                            <p class="text-gray-600 text-sm">Our team is always ready to help you with any questions.</p>
-                        </div>
-                    </div>
-                </div>
-
-                <h2 class="text-2xl font-semibold mb-4">Our Story</h2>
-                <p class="text-gray-700 mb-6">
-                    Founded with a passion for digital excellence, <?php echo htmlspecialchars($site_name); ?> has grown from a small idea to a trusted platform for digital products. We understand the importance of having the right tools and resources to succeed in the digital world, and we're committed to providing exactly that.
-                </p>
-
-                <h2 class="text-2xl font-semibold mb-4">Why Choose Us?</h2>
-                <ul class="list-disc list-inside text-gray-700 space-y-2">
-                    <li>Curated selection of premium digital products</li>
-                    <li>Competitive pricing without compromising quality</li>
-                    <li>Secure and anonymous checkout options</li>
-                    <li>Regular updates and improvements to our products</li>
-                    <li>Dedicated customer support team</li>
-                </ul>
-            </div>
-
-            <div class="bg-indigo-600 rounded-lg shadow-lg p-8 text-white text-center">
-                <h2 class="text-2xl font-semibold mb-4">Get in Touch</h2>
-                <p class="mb-6">Have questions or want to learn more? We'd love to hear from you!</p>
-                <a href="mailto:<?php echo htmlspecialchars(getSetting('site_email', 'noreply@webstore.com')); ?>" class="inline-block bg-white text-indigo-600 px-6 py-3 rounded-lg font-semibold hover:bg-gray-100 transition">
-                    <i class="fas fa-envelope mr-2"></i>
-                    Contact Us
-                </a>
-            </div>
-        </div>
+  <!-- CONTENT -->
+  <div class="content">
+    <div class="section">
+      <h2>Our Mission</h2>
+      <p>We believe in making premium digital assets accessible to everyone, with a focus on quality, security, and customer satisfaction. Every website in our collection is carefully crafted to help businesses establish a strong online presence quickly and affordably.</p>
     </div>
 
-    <!-- Footer -->
-    <footer class="bg-gray-800 text-white py-12 mt-12">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
-                <div>
-                    <h3 class="text-lg font-semibold mb-4"><?php echo htmlspecialchars($site_name); ?></h3>
-                    <p class="text-gray-400 text-sm">Your trusted source for premium digital products.</p>
-                </div>
-                <div>
-                    <h4 class="font-semibold mb-4">Quick Links</h4>
-                    <ul class="space-y-2 text-gray-400 text-sm">
-                        <li><a href="index.php" class="hover:text-white">Home</a></li>
-                        <li><a href="about.php" class="hover:text-white">About</a></li>
-                        <li><a href="blog.php" class="hover:text-white">Blog</a></li>
-                        <li><a href="cart.php" class="hover:text-white">Cart</a></li>
-                    </ul>
-                </div>
-                <div>
-                    <h4 class="font-semibold mb-4">Legal</h4>
-                    <ul class="space-y-2 text-gray-400 text-sm">
-                        <li><a href="terms.php" class="hover:text-white">Terms of Service</a></li>
-                        <li><a href="privacy.php" class="hover:text-white">Privacy Policy</a></li>
-                    </ul>
-                </div>
-                <div>
-                    <h4 class="font-semibold mb-4">Contact</h4>
-                    <p class="text-gray-400 text-sm"><?php echo htmlspecialchars(getSetting('site_email', 'noreply@webstore.com')); ?></p>
-                </div>
-            </div>
-            <div class="border-t border-gray-700 mt-8 pt-8 text-center text-gray-400 text-sm">
-                <p>&copy; <?php echo date('Y'); ?> <?php echo htmlspecialchars($site_name); ?>. All rights reserved.</p>
-            </div>
+    <div class="section">
+      <h2>What We Offer</h2>
+      <div class="features">
+        <div class="feature">
+          <h3>Premium Websites</h3>
+          <p>High-quality, professionally designed websites ready for immediate use.</p>
         </div>
-    </footer>
+        <div class="feature">
+          <h3>Secure Payments</h3>
+          <p>Multiple payment options including cryptocurrency with bank-level security.</p>
+        </div>
+        <div class="feature">
+          <h3>Instant Delivery</h3>
+          <p>Get your purchases immediately after payment verification.</p>
+        </div>
+        <div class="feature">
+          <h3>24/7 Support</h3>
+          <p>Our team is always ready to help you with any questions.</p>
+        </div>
+      </div>
+    </div>
 
-    <script>
-        document.getElementById('mobileMenuBtn').addEventListener('click', function() {
-            document.getElementById('mobileMenu').classList.toggle('hidden');
-        });
-    </script>
+    <div class="section">
+      <h2>Our Story</h2>
+      <p>Founded with a passion for digital excellence, <?php echo htmlspecialchars($site_name); ?> has grown from a small idea to a trusted platform for digital products. We understand the importance of having the right tools and resources to succeed in the digital world, and we're committed to providing exactly that.</p>
+    </div>
+
+    <div class="section">
+      <h2>Why Choose Us?</h2>
+      <ul style="color:var(--grey);line-height:1.8;">
+        <li>Curated selection of premium digital products</li>
+        <li>Competitive pricing without compromising quality</li>
+        <li>Secure and anonymous checkout options</li>
+        <li>Regular updates and improvements to our products</li>
+        <li>Dedicated customer support team</li>
+      </ul>
+    </div>
+
+    <div class="cta-box">
+      <h3>Get in Touch</h3>
+      <p>Have questions or want to learn more? We'd love to hear from you!</p>
+      <a href="contact.php">Contact Us →</a>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <footer>
+    <a href="index.php" class="footer-logo"><?php echo htmlspecialchars($site_name); ?></a>
+    <ul class="footer-links">
+      <li><a href="index.php">Home</a></li>
+      <li><a href="about.php">About</a></li>
+      <li><a href="blog.php">Blog</a></li>
+      <li><a href="contact.php">Contact</a></li>
+      <li><a href="cart.php">Cart</a></li>
+      <li><a href="privacy.php">Privacy Policy</a></li>
+      <li><a href="terms.php">Terms of Use</a></li>
+    </ul>
+    <span class="footer-copy">© <?php echo date('Y'); ?> <?php echo htmlspecialchars($site_name); ?>. All rights reserved.</span>
+  </footer>
+
+  <script>
+    const hamburger = document.getElementById('hamburger');
+    const navLinks = document.getElementById('navLinks');
+    hamburger.addEventListener('click', () => {
+      navLinks.classList.toggle('open');
+    });
+    navLinks.querySelectorAll('a').forEach(a => {
+      a.addEventListener('click', () => navLinks.classList.remove('open'));
+    });
+  </script>
 </body>
 </html>

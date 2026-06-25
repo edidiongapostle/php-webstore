@@ -21,6 +21,9 @@ $checkout_data = $_SESSION['checkout_data'];
 $cart_items = getCartItems();
 $cart_total = getCartTotal();
 $site_name = getSetting('site_name', 'WebStore');
+$seo_title = getSetting('seo_title', 'Premium Websites for Sale');
+$seo_description = getSetting('seo_description', 'Buy premium websites and templates for your business');
+$seo_keywords = getSetting('seo_keywords', 'websites, templates, premium, business');
 
 if (empty($cart_items)) {
     header('Location: cart.php');
@@ -143,166 +146,778 @@ $pageTitle = "Payment Confirmation - " . $site_name;
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?php echo $pageTitle; ?></title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title><?php echo htmlspecialchars($pageTitle); ?></title>
+  <meta name="description" content="<?php echo htmlspecialchars($seo_description); ?>">
+  <meta name="keywords" content="<?php echo htmlspecialchars($seo_keywords); ?>">
+  <meta name="author" content="<?php echo htmlspecialchars($site_name); ?>">
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,600;0,9..144,700;1,9..144,300;1,9..144,600&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --white:   #FFFFFF;
+      --black:   #0D0D0D;
+      --grey:    #6B6B6B;
+      --light:   #F5F5F3;
+      --border:  #E4E4E0;
+      --accent:  #1A3BFF;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--white);
+      color: var(--black);
+      line-height: 1.6;
+    }
+
+    /* NAV */
+    nav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 1000;
+      background: rgba(255,255,255,0.95);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--border);
+      padding: 1.25rem 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .nav-logo {
+      font-family: 'Fraunces', serif;
+      font-size: 1.5rem;
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      color: var(--black);
+      text-decoration: none;
+    }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 2rem;
+      list-style: none;
+    }
+
+    .nav-links a {
+      font-size: 0.9rem;
+      font-weight: 500;
+      color: var(--grey);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+
+    .nav-links a:hover {
+      color: var(--black);
+    }
+
+    .nav-cta {
+      background: var(--black);
+      color: var(--white) !important;
+      padding: 0.6rem 1.2rem;
+      border-radius: 100px;
+      transition: background 0.2s;
+    }
+
+    .nav-cta:hover {
+      background: #1a1a1a;
+    }
+
+    .nav-hamburger {
+      display: none;
+      flex-direction: column;
+      gap: 0.35rem;
+      background: none;
+      border: none;
+      cursor: pointer;
+    }
+
+    .nav-hamburger span {
+      width: 24px;
+      height: 2px;
+      background: var(--black);
+      transition: 0.2s;
+    }
+
+    @media (max-width: 768px) {
+      .nav-links {
+        position: fixed;
+        top: 70px;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        flex-direction: column;
+        background: var(--white);
+        padding: 2rem;
+        gap: 1.5rem;
+        transform: translateX(100%);
+        transition: transform 0.3s ease;
+      }
+
+      .nav-links.open {
+        transform: translateX(0);
+      }
+
+      .nav-hamburger {
+        display: flex;
+      }
+    }
+
+    /* HERO */
+    .hero {
+      padding: 8rem 2rem 4rem;
+      background: var(--light);
+      text-align: center;
+    }
+
+    .hero h1 {
+      font-family: 'Fraunces', serif;
+      font-size: clamp(2.5rem, 6vw, 4rem);
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      line-height: 1.1;
+      margin-bottom: 1.5rem;
+    }
+
+    .hero p {
+      font-size: 1.1rem;
+      color: var(--grey);
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    /* CONTENT */
+    .content {
+      max-width: 800px;
+      margin: 4rem auto;
+      padding: 0 2rem;
+    }
+
+    .card {
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 2rem;
+      margin-bottom: 2rem;
+    }
+
+    .card h2 {
+      font-family: 'Fraunces', serif;
+      font-size: 1.5rem;
+      font-weight: 700;
+      margin-bottom: 1.5rem;
+    }
+
+    .summary-item {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 0.75rem;
+    }
+
+    .summary-item .name {
+      color: var(--grey);
+    }
+
+    .summary-divider {
+      border-top: 1px solid var(--border);
+      padding-top: 1rem;
+      margin-top: 1rem;
+    }
+
+    .summary-total {
+      display: flex;
+      justify-content: space-between;
+      font-weight: 700;
+      font-size: 1.1rem;
+      color: var(--accent);
+    }
+
+    .form-group {
+      margin-bottom: 1.5rem;
+    }
+
+    .form-group label {
+      display: block;
+      font-weight: 500;
+      margin-bottom: 0.5rem;
+      font-size: 0.9rem;
+    }
+
+    .form-group input,
+    .form-group textarea {
+      width: 100%;
+      padding: 0.85rem;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-family: inherit;
+      font-size: 0.95rem;
+      transition: border-color 0.2s;
+    }
+
+    .form-group input:focus,
+    .form-group textarea:focus {
+      outline: none;
+      border-color: var(--accent);
+    }
+
+    .form-group .error {
+      color: #DC2626;
+      font-size: 0.85rem;
+      margin-top: 0.5rem;
+    }
+
+    .form-group .hint {
+      color: var(--grey);
+      font-size: 0.8rem;
+      margin-top: 0.5rem;
+    }
+
+    .notes-box {
+      background: #FEF3C7;
+      padding: 1.5rem;
+      border-radius: 12px;
+      margin-bottom: 1.5rem;
+    }
+
+    .notes-box h4 {
+      font-weight: 600;
+      margin-bottom: 0.75rem;
+      color: #92400E;
+    }
+
+    .notes-box ul {
+      list-style: none;
+      padding: 0;
+      color: #92400E;
+      font-size: 0.9rem;
+    }
+
+    .notes-box li {
+      margin-bottom: 0.5rem;
+    }
+
+    .action-buttons {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .action-buttons button,
+    .action-buttons a {
+      flex: 1;
+      padding: 0.85rem 2rem;
+      border-radius: 100px;
+      font-weight: 600;
+      text-decoration: none;
+      text-align: center;
+      transition: all 0.2s;
+      border: none;
+      cursor: pointer;
+    }
+
+    .action-buttons .primary {
+      background: var(--black);
+      color: white;
+    }
+
+    .action-buttons .primary:hover {
+      background: #1a1a1a;
+    }
+
+    .action-buttons .secondary {
+      background: var(--light);
+      color: var(--black);
+    }
+
+    .action-buttons .secondary:hover {
+      background: #E4E4E0;
+    }
+
+    /* SUCCESS */
+    .success-box {
+      background: #DCFCE7;
+      padding: 2rem;
+      border-radius: 16px;
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+
+    .success-icon {
+      font-size: 3rem;
+      color: #22C55E;
+      margin-bottom: 1rem;
+    }
+
+    .success-box h2 {
+      font-family: 'Fraunces', serif;
+      font-size: 1.75rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+      color: #166534;
+    }
+
+    .success-box p {
+      color: #166534;
+      margin-bottom: 1.5rem;
+    }
+
+    .success-box .reference {
+      background: var(--white);
+      padding: 1rem;
+      border-radius: 8px;
+      border: 1px solid #86EFAC;
+    }
+
+    .success-box .reference .label {
+      font-size: 0.85rem;
+      color: var(--grey);
+      margin-bottom: 0.25rem;
+    }
+
+    .success-box .reference .value {
+      font-family: 'Fraunces', serif;
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--accent);
+    }
+
+    .steps-box {
+      background: var(--light);
+      padding: 1.5rem;
+      border-radius: 12px;
+      margin-bottom: 1.5rem;
+    }
+
+    .steps-box h3 {
+      font-family: 'Fraunces', serif;
+      font-size: 1.25rem;
+      font-weight: 600;
+      margin-bottom: 1rem;
+    }
+
+    .step {
+      display: flex;
+      align-items: start;
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+
+    .step-number {
+      width: 32px;
+      height: 32px;
+      background: var(--accent);
+      color: white;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+      flex-shrink: 0;
+    }
+
+    .step-content h4 {
+      font-weight: 600;
+      margin-bottom: 0.25rem;
+    }
+
+    .step-content p {
+      font-size: 0.9rem;
+      color: var(--grey);
+      margin: 0;
+    }
+
+    /* FOOTER */
+    footer {
+      background: var(--black);
+      color: var(--white);
+      padding: 3rem 2rem;
+      text-align: center;
+      margin-top: 4rem;
+    }
+
+    .footer-logo {
+      font-family: 'Fraunces', serif;
+      font-size: 1.25rem;
+      color: var(--white);
+      text-decoration: none;
+      display: block;
+      margin-bottom: 1.5rem;
+    }
+
+    .footer-links {
+      display: flex;
+      justify-content: center;
+      gap: 2rem;
+      list-style: none;
+      margin-bottom: 1.5rem;
+      flex-wrap: wrap;
+    }
+
+    .footer-links a {
+      color: var(--grey);
+      text-decoration: none;
+      font-size: 0.9rem;
+      transition: color 0.2s;
+    }
+
+    .footer-links a:hover {
+      color: var(--white);
+    }
+
+    .footer-copy {
+      color: var(--grey);
+      font-size: 0.85rem;
+    }
+
+    /* MOBILE OPTIMIZATIONS */
+    @media (max-width: 768px) {
+      .hero {
+        padding: 6rem 1.5rem 3rem;
+      }
+
+      .hero h1 {
+        font-size: clamp(1.75rem, 5vw, 2.5rem);
+      }
+
+      .hero p {
+        font-size: 1rem;
+      }
+
+      .content {
+        margin: 2rem auto;
+        padding: 0 1.5rem;
+      }
+
+      .card {
+        padding: 1.5rem;
+        border-radius: 12px;
+      }
+
+      .card h2 {
+        font-size: 1.25rem;
+        margin-bottom: 1rem;
+      }
+
+      .summary-item {
+        font-size: 0.9rem;
+      }
+
+      .summary-total {
+        font-size: 1rem;
+      }
+
+      .form-group {
+        margin-bottom: 1rem;
+      }
+
+      .form-group label {
+        font-size: 0.85rem;
+      }
+
+      .form-group input,
+      .form-group textarea {
+        padding: 0.75rem;
+        font-size: 0.9rem;
+      }
+
+      .notes-box {
+        padding: 1rem;
+        border-radius: 8px;
+      }
+
+      .notes-box h4 {
+        font-size: 0.95rem;
+      }
+
+      .notes-box ul {
+        font-size: 0.85rem;
+      }
+
+      .action-buttons {
+        flex-direction: column;
+      }
+
+      .action-buttons button,
+      .action-buttons a {
+        width: 100%;
+      }
+
+      .success-box {
+        padding: 1.5rem;
+      }
+
+      .success-icon {
+        font-size: 2.5rem;
+      }
+
+      .success-box h2 {
+        font-size: 1.5rem;
+      }
+
+      .success-box .reference .value {
+        font-size: 1.1rem;
+        line-height: 1.4;
+      }
+
+      .steps-box {
+        padding: 1rem;
+      }
+
+      .steps-box h3 {
+        font-size: 1.1rem;
+      }
+
+      .step-number {
+        width: 28px;
+        height: 28px;
+        font-size: 0.9rem;
+      }
+
+      .step-content h4 {
+        font-size: 0.95rem;
+      }
+
+      .step-content p {
+        font-size: 0.85rem;
+      }
+
+      .footer-links {
+        gap: 1rem;
+      }
+
+      .footer-links a {
+        font-size: 0.85rem;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .card h2 {
+        font-size: 1.15rem;
+      }
+
+      .success-box .reference .value {
+        font-size: 1rem;
+      }
+
+      .steps-box h3 {
+        font-size: 1rem;
+      }
+    }
+  </style>
 </head>
-<body class="bg-gray-50">
-    <!-- Navigation -->
-    <nav class="bg-white shadow-lg sticky top-0 z-50">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between h-16">
-                <div class="flex items-center">
-                    <h1 class="text-2xl font-bold text-indigo-600"><?php echo htmlspecialchars($site_name); ?></h1>
-                </div>
-                <div class="flex items-center space-x-4">
-                    <a href="index.php" class="text-gray-700 hover:text-indigo-600 px-3 py-2 rounded-md text-sm font-medium">Home</a>
-                    <a href="cart.php" class="text-gray-700 hover:text-indigo-600 px-3 py-2 rounded-md text-sm font-medium">Cart</a>
-                </div>
+<body>
+  <!-- NAV -->
+  <nav>
+    <a href="index.php" class="nav-logo"><?php echo htmlspecialchars($site_name); ?></a>
+    <ul class="nav-links" id="navLinks">
+      <li><a href="index.php">Home</a></li>
+      <li><a href="about.php">About</a></li>
+      <li><a href="blog.php">Blog</a></li>
+      <li><a href="contact.php">Contact</a></li>
+      <li><a href="cart.php" class="relative">
+        <i class="fas fa-shopping-cart"></i>
+      </a></li>
+      <li><a href="admin/login.php" class="nav-cta">Admin</a></li>
+    </ul>
+    <button class="nav-hamburger" id="hamburger" aria-label="Menu">
+      <span></span><span></span><span></span>
+    </button>
+  </nav>
+
+  <!-- HERO -->
+  <section class="hero">
+    <h1>Payment Confirmation</h1>
+    <p>Submit your payment details to complete your order</p>
+  </section>
+
+  <!-- CONTENT -->
+  <div class="content">
+    <?php if ($success): ?>
+      <!-- Success Message -->
+      <div class="success-box">
+        <div class="success-icon">
+          <i class="fas fa-check-circle"></i>
+        </div>
+        <h2>Payment Submitted Successfully!</h2>
+        <p>Your order is awaiting verification.</p>
+        <div class="reference">
+          <div class="label">Order Reference:</div>
+          <div class="value"><?php echo htmlspecialchars($order_reference); ?></div>
+          <div style="display:flex;gap:0.5rem;margin-top:0.75rem">
+            <button onclick="copyToClipboard(this)" data-address="<?php echo htmlspecialchars($order_reference); ?>" class="copy-btn" style="padding:0.5rem 1rem;font-size:0.85rem;border-radius:6px;background:var(--accent);color:white;border:none;cursor:pointer">
+              <i class="fas fa-copy mr-1"></i>Copy Reference
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>What happens next?</h2>
+        <div class="steps-box">
+          <div class="step">
+            <div class="step-number">1</div>
+            <div class="step-content">
+              <h4>Payment Verification</h4>
+              <p>Our team will verify your payment within 24-48 hours.</p>
             </div>
+          </div>
+          <div class="step">
+            <div class="step-number">2</div>
+            <div class="step-content">
+              <h4>Order Approval</h4>
+              <p>Once verified, your order will be approved and you'll receive a download link.</p>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-number">3</div>
+            <div class="step-content">
+              <h4>Download Your Purchase</h4>
+              <p>Use the download link sent to your email to access your purchase.</p>
+            </div>
+          </div>
         </div>
-    </nav>
+      </div>
 
-    <!-- Payment Confirmation Content -->
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div class="max-w-3xl mx-auto">
-            <?php if ($success): ?>
-                <!-- Success Message -->
-                <div class="bg-green-50 border border-green-200 rounded-lg p-8 mb-6">
-                    <div class="text-center">
-                        <i class="fas fa-check-circle text-6xl text-green-500 mb-4"></i>
-                        <h2 class="text-2xl font-bold text-green-900 mb-2">Payment Submitted Successfully!</h2>
-                        <p class="text-green-800 mb-4">Your order is awaiting verification.</p>
-                        <div class="bg-white rounded p-4 border mt-4">
-                            <p class="text-sm text-gray-600">Order Reference:</p>
-                            <p class="text-xl font-bold text-indigo-600"><?php echo htmlspecialchars($order_reference); ?></p>
-                        </div>
-                    </div>
-                </div>
+      <div class="action-buttons">
+        <a href="index.php" class="primary">
+          <i class="fas fa-home mr-2"></i>Return to Home
+        </a>
+      </div>
 
-                <div class="bg-white rounded-lg shadow-lg p-6 mb-6">
-                    <h3 class="text-xl font-semibold mb-4">What happens next?</h3>
-                    <div class="space-y-4">
-                        <div class="flex items-start">
-                            <div class="flex-shrink-0 w-8 h-8 bg-indigo-100 rounded-full flex items-center justify-center mr-4">
-                                <span class="text-indigo-600 font-bold">1</span>
-                            </div>
-                            <div>
-                                <p class="font-medium">Payment Verification</p>
-                                <p class="text-sm text-gray-600">Our team will verify your payment within 24-48 hours.</p>
-                            </div>
-                        </div>
-                        <div class="flex items-start">
-                            <div class="flex-shrink-0 w-8 h-8 bg-indigo-100 rounded-full flex items-center justify-center mr-4">
-                                <span class="text-indigo-600 font-bold">2</span>
-                            </div>
-                            <div>
-                                <p class="font-medium">Order Approval</p>
-                                <p class="text-sm text-gray-600">Once verified, your order will be approved and you'll receive a download link.</p>
-                            </div>
-                        </div>
-                        <div class="flex items-start">
-                            <div class="flex-shrink-0 w-8 h-8 bg-indigo-100 rounded-full flex items-center justify-center mr-4">
-                                <span class="text-indigo-600 font-bold">3</span>
-                            </div>
-                            <div>
-                                <p class="font-medium">Download Your Purchase</p>
-                                <p class="text-sm text-gray-600">Use the download link sent to your email to access your purchase.</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <a href="index.php" class="block w-full bg-indigo-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-indigo-700 transition text-center">
-                    <i class="fas fa-home mr-2"></i>
-                    Return to Home
-                </a>
-
-            <?php else: ?>
-                <!-- Payment Confirmation Form -->
-                <h2 class="text-3xl font-bold mb-8">Payment Confirmation</h2>
-
-                <?php if (isset($errors['general'])): ?>
-                    <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-6">
-                        <?php echo $errors['general']; ?>
-                    </div>
-                <?php endif; ?>
-
-                <div class="bg-white rounded-lg shadow-lg p-6 mb-6">
-                    <h3 class="text-xl font-semibold mb-4">Order Summary</h3>
-                    <div class="space-y-2">
-                        <?php foreach ($cart_items as $item): ?>
-                            <div class="flex justify-between">
-                                <span><?php echo htmlspecialchars($item['title']); ?></span>
-                                <span><?php echo formatPrice($item['price']); ?></span>
-                            </div>
-                        <?php endforeach; ?>
-                        <div class="border-t pt-2 mt-2">
-                            <div class="flex justify-between text-lg font-semibold">
-                                <span>Total</span>
-                                <span class="text-indigo-600"><?php echo formatPrice($cart_total); ?></span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <form method="POST" enctype="multipart/form-data" class="bg-white rounded-lg shadow-lg p-6">
-                    <h3 class="text-xl font-semibold mb-4">Submit Payment Details</h3>
-
-                    <div class="space-y-6">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Transaction Reference *</label>
-                            <input type="text" name="transaction_reference" value="<?php echo htmlspecialchars($_POST['transaction_reference'] ?? ''); ?>"
-                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                                   placeholder="Enter transaction ID or reference number">
-                            <?php if (isset($errors['transaction_reference'])): ?>
-                                <p class="text-red-500 text-sm mt-1"><?php echo $errors['transaction_reference']; ?></p>
-                            <?php endif; ?>
-                        </div>
-
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Payment Screenshot *</label>
-                            <input type="file" name="payment_screenshot" accept="image/jpeg,image/png,image/jpg,image/gif"
-                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                            <p class="text-sm text-gray-500 mt-1">Upload a screenshot of your payment confirmation (JPG, PNG, GIF - Max 5MB)</p>
-                            <?php if (isset($errors['payment_screenshot'])): ?>
-                                <p class="text-red-500 text-sm mt-1"><?php echo $errors['payment_screenshot']; ?></p>
-                            <?php endif; ?>
-                        </div>
-
-                        <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-                            <h4 class="font-semibold text-yellow-900 mb-2">Before submitting:</h4>
-                            <ul class="text-sm text-yellow-800 space-y-1">
-                                <li>• Ensure you have made the payment</li>
-                                <li>• Take a clear screenshot of the payment confirmation</li>
-                                <li>• Copy the transaction reference from your payment</li>
-                                <li>• Double-check the amount matches your order total</li>
-                            </ul>
-                        </div>
-
-                        <div class="flex flex-col sm:flex-row gap-4">
-                            <button type="submit" class="flex-1 bg-indigo-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-indigo-700 transition">
-                                <i class="fas fa-paper-plane mr-2"></i>
-                                Submit Payment Details
-                            </button>
-                            <a href="payment_instructions.php" class="flex-1 bg-gray-200 text-gray-700 px-6 py-3 rounded-lg font-semibold hover:bg-gray-300 transition text-center">
-                                <i class="fas fa-arrow-left mr-2"></i>
-                                Back to Instructions
-                            </a>
-                        </div>
-                    </div>
-                </form>
-            <?php endif; ?>
+    <?php else: ?>
+      <!-- Payment Confirmation Form -->
+      <?php if (isset($errors['general'])): ?>
+        <div style="background:#FEE2E2;padding:1rem;border-radius:8px;border:1px solid #FCA5A5;margin-bottom:2rem;color:#991B1B">
+          <?php echo $errors['general']; ?>
         </div>
-    </div>
+      <?php endif; ?>
 
-    <!-- Footer -->
-    <footer class="bg-gray-800 text-white py-8 mt-12">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-            <p>&copy; <?php echo date('Y'); ?> <?php echo htmlspecialchars($site_name); ?>. All rights reserved.</p>
+      <div class="card">
+        <h2>Order Summary</h2>
+        <?php foreach ($cart_items as $item): ?>
+          <div class="summary-item">
+            <span class="name"><?php echo htmlspecialchars($item['title']); ?></span>
+            <span><?php echo formatPrice($item['price']); ?></span>
+          </div>
+        <?php endforeach; ?>
+        <div class="summary-divider">
+          <div class="summary-total">
+            <span>Total</span>
+            <span><?php echo formatPrice($cart_total); ?></span>
+          </div>
         </div>
-    </footer>
+      </div>
+
+      <form method="POST" enctype="multipart/form-data" class="card">
+        <h2>Submit Payment Details</h2>
+
+        <div class="form-group">
+          <label>Transaction Reference *</label>
+          <input type="text" name="transaction_reference" value="<?php echo htmlspecialchars($_POST['transaction_reference'] ?? ''); ?>" placeholder="Enter transaction ID or reference number">
+          <?php if (isset($errors['transaction_reference'])): ?>
+            <p class="error"><?php echo $errors['transaction_reference']; ?></p>
+          <?php endif; ?>
+        </div>
+
+        <div class="form-group">
+          <label>Payment Screenshot *</label>
+          <input type="file" name="payment_screenshot" accept="image/jpeg,image/png,image/jpg,image/gif">
+          <p class="hint">Upload a screenshot of your payment confirmation (JPG, PNG, GIF - Max 5MB)</p>
+          <?php if (isset($errors['payment_screenshot'])): ?>
+            <p class="error"><?php echo $errors['payment_screenshot']; ?></p>
+          <?php endif; ?>
+        </div>
+
+        <div class="notes-box">
+          <h4>Before submitting:</h4>
+          <ul>
+            <li>• Ensure you have made the payment</li>
+            <li>• Take a clear screenshot of the payment confirmation</li>
+            <li>• Copy the transaction reference from your payment</li>
+            <li>• Double-check the amount matches your order total</li>
+          </ul>
+        </div>
+
+        <div class="action-buttons">
+          <button type="submit" class="primary">
+            <i class="fas fa-paper-plane mr-2"></i>Submit Payment Details
+          </button>
+          <a href="payment_instructions.php" class="secondary">
+            <i class="fas fa-arrow-left mr-2"></i>Back to Instructions
+          </a>
+        </div>
+      </form>
+    <?php endif; ?>
+  </div>
+
+  <!-- FOOTER -->
+  <footer>
+    <a href="index.php" class="footer-logo"><?php echo htmlspecialchars($site_name); ?></a>
+    <ul class="footer-links">
+      <li><a href="index.php">Home</a></li>
+      <li><a href="about.php">About</a></li>
+      <li><a href="blog.php">Blog</a></li>
+      <li><a href="contact.php">Contact</a></li>
+      <li><a href="cart.php">Cart</a></li>
+      <li><a href="privacy.php">Privacy Policy</a></li>
+      <li><a href="terms.php">Terms of Use</a></li>
+    </ul>
+    <span class="footer-copy">© <?php echo date('Y'); ?> <?php echo htmlspecialchars($site_name); ?>. All rights reserved.</span>
+  </footer>
+
+  <script>
+    const hamburger = document.getElementById('hamburger');
+    const navLinks = document.getElementById('navLinks');
+    hamburger.addEventListener('click', () => {
+      navLinks.classList.toggle('open');
+    });
+    navLinks.querySelectorAll('a').forEach(a => {
+      a.addEventListener('click', () => navLinks.classList.remove('open'));
+    });
+
+    function copyToClipboard(button) {
+      const address = button.getAttribute('data-address');
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(address).then(() => showCopied(button), () => fallbackCopy(address, button));
+      } else {
+        fallbackCopy(address, button);
+      }
+    }
+
+    function fallbackCopy(text, button) {
+      const textArea = document.createElement('textarea');
+      textArea.value = text;
+      textArea.style.position = 'fixed';
+      textArea.style.left = '-9999px';
+      document.body.appendChild(textArea);
+      textArea.select();
+      try {
+        const successful = document.execCommand('copy');
+        if (successful) showCopied(button);
+        else alert('Failed to copy. Please copy manually.');
+      } catch (err) {
+        alert('Failed to copy. Please copy manually.');
+      }
+      document.body.removeChild(textArea);
+    }
+
+    function showCopied(button) {
+      const originalText = button.innerHTML;
+      button.innerHTML = 'Copied!';
+      button.style.background = '#22C55E';
+      setTimeout(() => {
+        button.innerHTML = originalText;
+        button.style.background = 'var(--accent)';
+      }, 2000);
+    }
+  </script>
 </body>
 </html>

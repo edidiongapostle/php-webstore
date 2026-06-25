@@ -1,267 +1,478 @@
 <?php
+session_start();
 require_once 'config.php';
 require_once 'functions.php';
+
 $site_name = getSetting('site_name', 'WebStore');
+$seo_title = getSetting('seo_title', 'Premium Websites for Sale');
+$seo_description = getSetting('seo_description', 'Buy premium websites and templates for your business');
+$seo_keywords = getSetting('seo_keywords', 'websites, templates, premium, business');
+
 $pageTitle = "Privacy Policy - " . $site_name;
 ?>
 
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?php echo $pageTitle; ?></title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title><?php echo htmlspecialchars($pageTitle); ?></title>
+  <meta name="description" content="<?php echo htmlspecialchars($seo_description); ?>">
+  <meta name="keywords" content="<?php echo htmlspecialchars($seo_keywords); ?>">
+  <meta name="author" content="<?php echo htmlspecialchars($site_name); ?>">
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,600;0,9..144,700;1,9..144,300;1,9..144,600&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --white:   #FFFFFF;
+      --black:   #0D0D0D;
+      --grey:    #6B6B6B;
+      --light:   #F5F5F3;
+      --border:  #E4E4E0;
+      --accent:  #1A3BFF;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--white);
+      color: var(--black);
+      line-height: 1.6;
+    }
+
+    /* NAV */
+    nav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 1000;
+      background: rgba(255,255,255,0.95);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--border);
+      padding: 1.25rem 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .nav-logo {
+      font-family: 'Fraunces', serif;
+      font-size: 1.5rem;
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      color: var(--black);
+      text-decoration: none;
+    }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 2rem;
+      list-style: none;
+    }
+
+    .nav-links a {
+      font-size: 0.9rem;
+      font-weight: 500;
+      color: var(--grey);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+
+    .nav-links a:hover {
+      color: var(--black);
+    }
+
+    .nav-cta {
+      background: var(--black);
+      color: var(--white) !important;
+      padding: 0.6rem 1.2rem;
+      border-radius: 100px;
+      transition: background 0.2s;
+    }
+
+    .nav-cta:hover {
+      background: #1a1a1a;
+    }
+
+    .nav-hamburger {
+      display: none;
+      flex-direction: column;
+      gap: 0.35rem;
+      background: none;
+      border: none;
+      cursor: pointer;
+    }
+
+    .nav-hamburger span {
+      width: 24px;
+      height: 2px;
+      background: var(--black);
+      transition: 0.2s;
+    }
+
+    @media (max-width: 768px) {
+      .nav-links {
+        position: fixed;
+        top: 70px;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        flex-direction: column;
+        background: var(--white);
+        padding: 2rem;
+        gap: 1.5rem;
+        transform: translateX(100%);
+        transition: transform 0.3s ease;
+      }
+
+      .nav-links.open {
+        transform: translateX(0);
+      }
+
+      .nav-hamburger {
+        display: flex;
+      }
+    }
+
+    /* HERO */
+    .hero {
+      padding: 8rem 2rem 4rem;
+      background: var(--light);
+      text-align: center;
+    }
+
+    .hero h1 {
+      font-family: 'Fraunces', serif;
+      font-size: clamp(2.5rem, 6vw, 4rem);
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      line-height: 1.1;
+      margin-bottom: 1.5rem;
+    }
+
+    .hero p {
+      font-size: 1.1rem;
+      color: var(--grey);
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    /* CONTENT */
+    .content {
+      max-width: 800px;
+      margin: 4rem auto;
+      padding: 0 2rem;
+    }
+
+    .content h2 {
+      font-family: 'Fraunces', serif;
+      font-size: 1.75rem;
+      font-weight: 700;
+      margin-top: 3rem;
+      margin-bottom: 1rem;
+    }
+
+    .content h3 {
+      font-size: 1.25rem;
+      font-weight: 600;
+      margin-top: 2rem;
+      margin-bottom: 0.75rem;
+    }
+
+    .content p {
+      color: var(--grey);
+      margin-bottom: 1rem;
+    }
+
+    .content ul {
+      color: var(--grey);
+      margin-left: 1.5rem;
+      margin-bottom: 1rem;
+    }
+
+    .content li {
+      margin-bottom: 0.5rem;
+    }
+
+    .content a {
+      color: var(--accent);
+      text-decoration: none;
+    }
+
+    .content a:hover {
+      text-decoration: underline;
+    }
+
+    .content .highlight-box {
+      background: var(--light);
+      padding: 1.5rem;
+      border-radius: 12px;
+      margin: 2rem 0;
+    }
+
+    .content .highlight-box ul {
+      margin-left: 0;
+      list-style: none;
+    }
+
+    .content .highlight-box li {
+      margin-bottom: 0.75rem;
+    }
+
+    .content .highlight-box strong {
+      color: var(--black);
+    }
+
+    .content .commitment {
+      background: #EFF6FF;
+      padding: 2rem;
+      border-radius: 12px;
+      margin-top: 3rem;
+    }
+
+    .content .commitment h3 {
+      font-family: 'Fraunces', serif;
+      font-size: 1.25rem;
+      margin-top: 0;
+      color: var(--accent);
+    }
+
+    .content .commitment p {
+      color: var(--black);
+    }
+
+    /* FOOTER */
+    footer {
+      background: var(--black);
+      color: var(--white);
+      padding: 3rem 2rem;
+      text-align: center;
+    }
+
+    .footer-logo {
+      font-family: 'Fraunces', serif;
+      font-size: 1.25rem;
+      color: var(--white);
+      text-decoration: none;
+      display: block;
+      margin-bottom: 1.5rem;
+    }
+
+    .footer-links {
+      display: flex;
+      justify-content: center;
+      gap: 2rem;
+      list-style: none;
+      margin-bottom: 1.5rem;
+      flex-wrap: wrap;
+    }
+
+    .footer-links a {
+      color: var(--grey);
+      text-decoration: none;
+      font-size: 0.9rem;
+      transition: color 0.2s;
+    }
+
+    .footer-links a:hover {
+      color: var(--white);
+    }
+
+    .footer-copy {
+      color: var(--grey);
+      font-size: 0.85rem;
+    }
+  </style>
 </head>
-<body class="bg-gray-50">
-    <!-- Navigation -->
-    <nav class="bg-white shadow-lg sticky top-0 z-50">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between h-16">
-                <div class="flex items-center">
-                    <h1 class="text-2xl font-bold text-indigo-600"><?php echo htmlspecialchars($site_name); ?></h1>
-                </div>
-                <div class="flex items-center space-x-4">
-                    <a href="index.php" class="text-gray-700 hover:text-indigo-600 px-3 py-2 rounded-md text-sm font-medium hidden md:block">Home</a>
-                    <a href="cart.php" class="relative text-gray-700 hover:text-indigo-600 px-3 py-2 rounded-md text-sm font-medium hidden md:block">
-                        <i class="fas fa-shopping-cart"></i>
-                        <?php 
-                        $cart_count = getCartCount();
-                        if ($cart_count > 0): 
-                        ?>
-                            <span class="absolute -top-1 -right-1 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs">
-                                <?php echo $cart_count; ?>
-                            </span>
-                        <?php endif; ?>
-                    </a>
-                    <a href="contact.php" class="text-gray-700 hover:text-indigo-600 px-3 py-2 rounded-md text-sm font-medium hidden md:block">Contact</a>
-                    <a href="admin/login.php" class="bg-indigo-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-indigo-700 hidden md:block">Admin</a>
-                </div>
-                
-                <!-- Mobile menu button -->
-                <div class="md:hidden flex items-center">
-                    <button id="mobile-menu-button" class="text-gray-700 hover:text-indigo-600 focus:outline-none focus:text-indigo-600">
-                        <i class="fas fa-bars text-xl"></i>
-                    </button>
-                </div>
-            </div>
-            
-            <!-- Mobile Navigation -->
-            <div id="mobile-menu" class="hidden md:hidden pb-4">
-                <div class="flex flex-col space-y-2">
-                    <a href="index.php" class="text-gray-700 hover:text-indigo-600 px-3 py-2 rounded-md text-sm font-medium">Home</a>
-                    <a href="cart.php" class="relative text-gray-700 hover:text-indigo-600 px-3 py-2 rounded-md text-sm font-medium">
-                        <i class="fas fa-shopping-cart mr-2"></i>
-                        Cart
-                        <?php 
-                        $cart_count = getCartCount();
-                        if ($cart_count > 0): 
-                        ?>
-                            <span class="ml-2 bg-red-500 text-white rounded-full px-2 py-1 text-xs">
-                                <?php echo $cart_count; ?>
-                            </span>
-                        <?php endif; ?>
-                    </a>
-                    <a href="contact.php" class="text-gray-700 hover:text-indigo-600 px-3 py-2 rounded-md text-sm font-medium">Contact</a>
-                    <a href="admin/login.php" class="bg-indigo-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-indigo-700">Admin</a>
-                </div>
-            </div>
-        </div>
-    </nav>
+<body>
 
-    <!-- Privacy Policy Content -->
-    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div class="bg-white rounded-lg shadow-lg p-8">
-            <h1 class="text-4xl font-bold mb-8 text-gray-900">Privacy Policy</h1>
-            
-            <div class="prose prose-lg max-w-none">
-                <p class="text-gray-600 mb-6">Last updated: <?php echo date('F j, Y'); ?></p>
-                
-                <h2 class="text-2xl font-semibold mt-8 mb-4 text-gray-900">1. Information We Collect</h2>
-                <div class="space-y-4 text-gray-700">
-                    <p>At WebStore, we are committed to protecting your privacy. We collect information to provide better services to all our users.</p>
-                    
-                    <h3 class="text-xl font-semibold mt-6 mb-3">Personal Information</h3>
-                    <p>When you make a purchase, we may collect:</p>
-                    <ul class="list-disc pl-6 space-y-2">
-                        <li>Name and email address (unless using anonymous checkout)</li>
-                        <li>Phone number (optional)</li>
-                        <li>Payment information (processed securely)</li>
-                        <li>Shipping and billing addresses (if applicable)</li>
-                    </ul>
-                    
-                    <h3 class="text-xl font-semibold mt-6 mb-3">Anonymous Purchases</h3>
-                    <p>We offer anonymous checkout options that allow you to purchase without providing personal information. In such cases:</p>
-                    <ul class="list-disc pl-6 space-y-2">
-                        <li>No personal data is stored</li>
-                        <li>Orders are marked as "Anonymous"</li>
-                        <li>Only transaction data is retained for order fulfillment</li>
-                    </ul>
-                    
-                    <h3 class="text-xl font-semibold mt-6 mb-3">Technical Information</h3>
-                    <p>We automatically collect certain technical information:</p>
-                    <ul class="list-disc pl-6 space-y-2">
-                        <li>IP address and browser type</li>
-                        <li>Device information</li>
-                        <li>Pages visited and time spent</li>
-                        <li>Referral source</li>
-                    </ul>
-                </div>
+  <!-- NAV -->
+  <nav>
+    <a href="index.php" class="nav-logo"><?php echo htmlspecialchars($site_name); ?></a>
+    <ul class="nav-links" id="navLinks">
+      <li><a href="index.php">Home</a></li>
+      <li><a href="about.php">About</a></li>
+      <li><a href="blog.php">Blog</a></li>
+      <li><a href="contact.php">Contact</a></li>
+      <li><a href="cart.php" class="relative">
+        <i class="fas fa-shopping-cart"></i>
+        <?php
+        $cart_count = getCartCount();
+        if ($cart_count > 0):
+        ?>
+          <span style="position:absolute;top:-4px;right:-8px;background:#EF4444;color:white;border-radius:50%;width:18px;height:18px;font-size:10px;display:flex;align-items:center;justify-content:center;"><?php echo $cart_count; ?></span>
+        <?php endif; ?>
+      </a></li>
+      <li><a href="admin/login.php" class="nav-cta">Admin</a></li>
+    </ul>
+    <button class="nav-hamburger" id="hamburger" aria-label="Menu">
+      <span></span><span></span><span></span>
+    </button>
+  </nav>
 
-                <h2 class="text-2xl font-semibold mt-8 mb-4 text-gray-900">2. How We Use Your Information</h2>
-                <div class="space-y-4 text-gray-700">
-                    <p>We use the information we collect to:</p>
-                    <ul class="list-disc pl-6 space-y-2">
-                        <li>Process and fulfill your orders</li>
-                        <li>Provide customer support</li>
-                        <li>Improve our services and website functionality</li>
-                        <li>Send transactional emails (order confirmations, updates)</li>
-                        <li>Prevent fraud and ensure security</li>
-                        <li>Comply with legal obligations</li>
-                    </ul>
-                </div>
+  <!-- HERO -->
+  <section class="hero">
+    <h1>Privacy Policy</h1>
+    <p>Last updated: <?php echo date('F j, Y'); ?></p>
+  </section>
 
-                <h2 class="text-2xl font-semibold mt-8 mb-4 text-gray-900">3. Data Security</h2>
-                <div class="space-y-4 text-gray-700">
-                    <p>We implement appropriate security measures to protect your information:</p>
-                    <ul class="list-disc pl-6 space-y-2">
-                        <li>SSL encryption for all data transmissions</li>
-                        <li>Secure payment processing through trusted providers</li>
-                        <li>Regular security audits and updates</li>
-                        <li>Limited access to personal data</li>
-                        <li>Secure data storage practices</li>
-                    </ul>
-                </div>
+  <!-- CONTENT -->
+  <div class="content">
+    <p>At <?php echo htmlspecialchars($site_name); ?>, we are committed to protecting your privacy. We collect information to provide better services to all our users.</p>
 
-                <h2 class="text-2xl font-semibold mt-8 mb-4 text-gray-900">4. Cryptocurrency Payments</h2>
-                <div class="space-y-4 text-gray-700">
-                    <p>For customers choosing cryptocurrency payments:</p>
-                    <ul class="list-disc pl-6 space-y-2">
-                        <li>Only transaction hash and amount are recorded</li>
-                        <li>No personal wallet information is stored</li>
-                        <li>Transactions are processed through secure crypto payment gateways</li>
-                        <li>Blockchain transparency ensures transaction verification</li>
-                    </ul>
-                </div>
+    <h2>1. Information We Collect</h2>
+    
+    <h3>Personal Information</h3>
+    <p>When you make a purchase, we may collect:</p>
+    <ul>
+      <li>Name and email address (unless using anonymous checkout)</li>
+      <li>Phone number (optional)</li>
+      <li>Payment information (processed securely)</li>
+      <li>Shipping and billing addresses (if applicable)</li>
+    </ul>
+    
+    <h3>Anonymous Purchases</h3>
+    <p>We offer anonymous checkout options that allow you to purchase without providing personal information. In such cases:</p>
+    <ul>
+      <li>No personal data is stored</li>
+      <li>Orders are marked as "Anonymous"</li>
+      <li>Only transaction data is retained for order fulfillment</li>
+    </ul>
+    
+    <h3>Technical Information</h3>
+    <p>We automatically collect certain technical information:</p>
+    <ul>
+      <li>IP address and browser type</li>
+      <li>Device information</li>
+      <li>Pages visited and time spent</li>
+      <li>Referral source</li>
+    </ul>
 
-                <h2 class="text-2xl font-semibold mt-8 mb-4 text-gray-900">5. Data Retention</h2>
-                <div class="space-y-4 text-gray-700">
-                    <p>We retain information only as long as necessary:</p>
-                    <ul class="list-disc pl-6 space-y-2">
-                        <li>Order records: 7 years for tax and legal compliance</li>
-                        <li>Customer accounts: Until account deletion</li>
-                        <li>Anonymous orders: Transaction data only</li>
-                        <li>Analytics data: Aggregated and anonymized after 90 days</li>
-                    </ul>
-                </div>
+    <h2>2. How We Use Your Information</h2>
+    <p>We use the information we collect to:</p>
+    <ul>
+      <li>Process and fulfill your orders</li>
+      <li>Provide customer support</li>
+      <li>Improve our services and website functionality</li>
+      <li>Send transactional emails (order confirmations, updates)</li>
+      <li>Prevent fraud and ensure security</li>
+      <li>Comply with legal obligations</li>
+    </ul>
 
-                <h2 class="text-2xl font-semibold mt-8 mb-4 text-gray-900">6. Your Rights</h2>
-                <div class="space-y-4 text-gray-700">
-                    <p>You have the right to:</p>
-                    <ul class="list-disc pl-6 space-y-2">
-                        <li>Access your personal information</li>
-                        <li>Correct inaccurate information</li>
-                        <li>Request deletion of your data (subject to legal requirements)</li>
-                        <li>Opt-out of marketing communications</li>
-                        <li>Request data portability</li>
-                    </ul>
-                </div>
+    <h2>3. Data Security</h2>
+    <p>We implement appropriate security measures to protect your information:</p>
+    <ul>
+      <li>SSL encryption for all data transmissions</li>
+      <li>Secure payment processing through trusted providers</li>
+      <li>Regular security audits and updates</li>
+      <li>Limited access to personal data</li>
+      <li>Secure data storage practices</li>
+    </ul>
 
-                <h2 class="text-2xl font-semibold mt-8 mb-4 text-gray-900">7. Third-Party Services</h2>
-                <div class="space-y-4 text-gray-700">
-                    <p>We use trusted third-party services:</p>
-                    <ul class="list-disc pl-6 space-y-2">
-                        <li>Payment processors (PayPal, Stripe, crypto gateways)</li>
-                        <li>Web hosting and CDN services</li>
-                        <li>Analytics tools (anonymized data only)</li>
-                        <li>Email delivery services for transactional emails</li>
-                    </ul>
-                </div>
+    <h2>4. Cryptocurrency Payments</h2>
+    <p>For customers choosing cryptocurrency payments:</p>
+    <ul>
+      <li>Only transaction hash and amount are recorded</li>
+      <li>No personal wallet information is stored</li>
+      <li>Transactions are processed through secure crypto payment gateways</li>
+      <li>Blockchain transparency ensures transaction verification</li>
+    </ul>
 
-                <h2 class="text-2xl font-semibold mt-8 mb-4 text-gray-900">8. Cookies</h2>
-                <div class="space-y-4 text-gray-700">
-                    <p>Our website uses cookies to:</p>
-                    <ul class="list-disc pl-6 space-y-2">
-                        <li>Maintain shopping cart contents</li>
-                        <li>Remember login preferences</li>
-                        <li>Analyze website usage (anonymized)</li>
-                        <li>Improve user experience</li>
-                    </ul>
-                    <p>You can control cookies through your browser settings.</p>
-                </div>
+    <h2>5. Data Retention</h2>
+    <p>We retain information only as long as necessary:</p>
+    <ul>
+      <li>Order records: 7 years for tax and legal compliance</li>
+      <li>Customer accounts: Until account deletion</li>
+      <li>Anonymous orders: Transaction data only</li>
+      <li>Analytics data: Aggregated and anonymized after 90 days</li>
+    </ul>
 
-                <h2 class="text-2xl font-semibold mt-8 mb-4 text-gray-900">9. International Data Transfers</h2>
-                <div class="space-y-4 text-gray-700">
-                    <p>Your information may be transferred to and processed in countries other than your own. We ensure appropriate safeguards are in place to protect your data in accordance with applicable data protection laws.</p>
-                </div>
+    <h2>6. Your Rights</h2>
+    <p>You have the right to:</p>
+    <ul>
+      <li>Access your personal information</li>
+      <li>Correct inaccurate information</li>
+      <li>Request deletion of your data (subject to legal requirements)</li>
+      <li>Opt-out of marketing communications</li>
+      <li>Request data portability</li>
+    </ul>
 
-                <h2 class="text-2xl font-semibold mt-8 mb-4 text-gray-900">10. Changes to This Policy</h2>
-                <div class="space-y-4 text-gray-700">
-                    <p>We may update this privacy policy from time to time. We will notify you of any changes by:</p>
-                    <ul class="list-disc pl-6 space-y-2">
-                        <li>Posting the new policy on this page</li>
-                        <li>Sending email notifications for significant changes</li>
-                        <li>Displaying notices on our website</li>
-                    </ul>
-                </div>
+    <h2>7. Third-Party Services</h2>
+    <p>We use trusted third-party services:</p>
+    <ul>
+      <li>Payment processors (PayPal, Stripe, crypto gateways)</li>
+      <li>Web hosting and CDN services</li>
+      <li>Analytics tools (anonymized data only)</li>
+      <li>Email delivery services for transactional emails</li>
+    </ul>
 
-                <h2 class="text-2xl font-semibold mt-8 mb-4 text-gray-900">11. Contact Us</h2>
-                <div class="space-y-4 text-gray-700">
-                    <p>If you have any questions about this privacy policy or our data practices, please contact us:</p>
-                    <div class="bg-gray-50 p-4 rounded-lg mt-4">
-                        <ul class="space-y-2">
-                            <li><strong>Email:</strong> privacy@webstore.com</li>
-                            <li><strong>Contact Form:</strong> <a href="contact.php" class="text-indigo-600 hover:text-indigo-800">Visit our contact page</a></li>
-                            <li><strong>Response Time:</strong> Within 48 hours</li>
-                        </ul>
-                    </div>
-                </div>
+    <h2>8. Cookies</h2>
+    <p>Our website uses cookies to:</p>
+    <ul>
+      <li>Maintain shopping cart contents</li>
+      <li>Remember login preferences</li>
+      <li>Analyze website usage (anonymized)</li>
+      <li>Improve user experience</li>
+    </ul>
+    <p>You can control cookies through your browser settings.</p>
 
-                <div class="mt-12 p-6 bg-indigo-50 rounded-lg">
-                    <h3 class="text-xl font-semibold mb-3 text-indigo-900">Privacy Commitment</h3>
-                    <p class="text-indigo-800">We are committed to protecting your privacy and ensuring transparency in how we handle your data. Your trust is important to us, and we continuously work to improve our privacy practices.</p>
-                </div>
-            </div>
-        </div>
+    <h2>9. International Data Transfers</h2>
+    <p>Your information may be transferred to and processed in countries other than your own. We ensure appropriate safeguards are in place to protect your data in accordance with applicable data protection laws.</p>
+
+    <h2>10. Changes to This Policy</h2>
+    <p>We may update this privacy policy from time to time. We will notify you of any changes by:</p>
+    <ul>
+      <li>Posting the new policy on this page</li>
+      <li>Sending email notifications for significant changes</li>
+      <li>Displaying notices on our website</li>
+    </ul>
+
+    <h2>11. Contact Us</h2>
+    <p>If you have any questions about this privacy policy or our data practices, please contact us:</p>
+    <div class="highlight-box">
+      <ul>
+        <li><strong>Email:</strong> privacy@webstore.com</li>
+        <li><strong>Contact Form:</strong> <a href="contact.php">Visit our contact page</a></li>
+        <li><strong>Response Time:</strong> Within 48 hours</li>
+      </ul>
     </div>
 
-    <!-- Footer -->
-    <footer class="bg-gray-800 text-white py-8">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-                <div>
-                    <h3 class="text-lg font-semibold mb-4"><?php echo htmlspecialchars($site_name); ?></h3>
-                    <p class="text-gray-400">Premium websites for your business needs</p>
-                </div>
-                <div>
-                    <h3 class="text-lg font-semibold mb-4">Quick Links</h3>
-                    <ul class="space-y-2">
-                        <li><a href="index.php" class="text-gray-400 hover:text-white">Home</a></li>
-                        <li><a href="privacy.php" class="text-gray-400 hover:text-white">Privacy Policy</a></li>
-                        <li><a href="contact.php" class="text-gray-400 hover:text-white">Contact</a></li>
-                    </ul>
-                </div>
-                <div>
-                    <h3 class="text-lg font-semibold mb-4">Legal</h3>
-                    <ul class="space-y-2">
-                        <li><a href="privacy.php" class="text-gray-400 hover:text-white">Privacy Policy</a></li>
-                        <li><a href="terms.php" class="text-gray-400 hover:text-white">Terms of Service</a></li>
-                    </ul>
-                </div>
-            </div>
-            <div class="mt-8 pt-8 border-t border-gray-700 text-center">
-                <p>&copy; <?php echo date('Y'); ?> <?php echo htmlspecialchars($site_name); ?>. All rights reserved.</p>
-            </div>
-        </div>
-    </footer>
+    <div class="commitment">
+      <h3>Privacy Commitment</h3>
+      <p>We are committed to protecting your privacy and ensuring transparency in how we handle your data. Your trust is important to us, and we continuously work to improve our privacy practices.</p>
+    </div>
+  </div>
 
-    <script>
-        // Mobile menu toggle
-        document.getElementById('mobile-menu-button').addEventListener('click', function() {
-            const mobileMenu = document.getElementById('mobile-menu');
-            mobileMenu.classList.toggle('hidden');
-        });
-    </script>
+  <!-- FOOTER -->
+  <footer>
+    <a href="index.php" class="footer-logo"><?php echo htmlspecialchars($site_name); ?></a>
+    <ul class="footer-links">
+      <li><a href="index.php">Home</a></li>
+      <li><a href="about.php">About</a></li>
+      <li><a href="blog.php">Blog</a></li>
+      <li><a href="contact.php">Contact</a></li>
+      <li><a href="cart.php">Cart</a></li>
+      <li><a href="privacy.php">Privacy Policy</a></li>
+      <li><a href="terms.php">Terms of Use</a></li>
+    </ul>
+    <span class="footer-copy">© <?php echo date('Y'); ?> <?php echo htmlspecialchars($site_name); ?>. All rights reserved.</span>
+  </footer>
+
+  <script>
+    const hamburger = document.getElementById('hamburger');
+    const navLinks = document.getElementById('navLinks');
+    hamburger.addEventListener('click', () => {
+      navLinks.classList.toggle('open');
+    });
+    navLinks.querySelectorAll('a').forEach(a => {
+      a.addEventListener('click', () => navLinks.classList.remove('open'));
+    });
+  </script>
 </body>
 </html>

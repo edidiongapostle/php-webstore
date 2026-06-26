@@ -279,4 +279,50 @@ function createDownloadEntry($order_id, $token, $file_path) {
 
     return $conn->lastInsertId();
 }
+
+function searchWebsites($query) {
+    global $conn;
+    
+    if (empty($query)) {
+        return getAllWebsites();
+    }
+    
+    $query = trim($query);
+    $searchTerms = preg_split('/\s+/', $query);
+    
+    $whereConditions = [];
+    $params = [];
+    
+    foreach ($searchTerms as $term) {
+        $term = '%' . $term . '%';
+        $whereConditions[] = "(title LIKE ? OR category LIKE ? OR technologies LIKE ? OR features LIKE ? OR description LIKE ?)";
+        $params = array_merge($params, [$term, $term, $term, $term, $term]);
+    }
+    
+    $whereClause = implode(' AND ', $whereConditions);
+    
+    $sql = "SELECT * FROM websites WHERE status = 'active' AND ($whereClause) ORDER BY featured DESC, created_at DESC";
+    
+    try {
+        $stmt = $conn->prepare($sql);
+        $stmt->execute($params);
+        return $stmt->fetchAll();
+    } catch (Exception $e) {
+        return [];
+    }
+}
+
+function getFeaturedWebsites() {
+    global $conn;
+    
+    $sql = "SELECT * FROM websites WHERE status = 'active' AND featured = 1 ORDER BY created_at DESC";
+    
+    try {
+        $stmt = $conn->prepare($sql);
+        $stmt->execute();
+        return $stmt->fetchAll();
+    } catch (Exception $e) {
+        return [];
+    }
+}
 ?>

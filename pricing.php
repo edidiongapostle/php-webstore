@@ -11,12 +11,13 @@ if ($maintenance_mode === '1' && !isset($_SESSION['admin_logged_in'])) {
     exit;
 }
 
+// Get settings from database
 $site_name = getSetting('site_name', 'WebStore');
 $seo_title = getSetting('seo_title', 'Premium Websites for Sale');
 $seo_description = getSetting('seo_description', 'Buy premium websites and templates for your business');
 $seo_keywords = getSetting('seo_keywords', 'websites, templates, premium, business');
 
-$pageTitle = "Blog - " . $site_name;
+$pageTitle = "Pricing - " . $site_name;
 ?>
 
 <!DOCTYPE html>
@@ -47,8 +48,8 @@ $pageTitle = "Blog - " . $site_name;
 
     body {
       font-family: 'Inter', sans-serif;
-      background: var(--white);
       color: var(--black);
+      background: var(--white);
       line-height: 1.6;
     }
 
@@ -59,43 +60,39 @@ $pageTitle = "Blog - " . $site_name;
       left: 0;
       right: 0;
       z-index: 1000;
-      background: rgba(255,255,255,0.95);
+      background: rgba(255, 255, 255, 0.95);
       backdrop-filter: blur(10px);
       border-bottom: 1px solid var(--border);
-      padding: 1.25rem 2rem;
+      padding: 1rem 2rem;
       display: flex;
-      align-items: center;
       justify-content: space-between;
+      align-items: center;
     }
 
     .nav-logo {
       font-family: 'Fraunces', serif;
-      font-size: 1.5rem;
-      font-weight: 700;
-      letter-spacing: -0.03em;
+      font-size: 1.25rem;
+      font-weight: 600;
       color: var(--black);
       text-decoration: none;
     }
 
     .nav-links {
       display: flex;
-      align-items: center;
       gap: 2rem;
+      align-items: center;
       list-style: none;
     }
 
     .nav-links a {
-      font-size: 0.9rem;
+      font-size: 0.875rem;
       font-weight: 500;
       color: var(--grey);
       text-decoration: none;
       transition: color 0.2s;
-      position: relative;
     }
 
-    .nav-links a:hover {
-      color: var(--black);
-    }
+    .nav-links a:hover { color: var(--black); }
 
     .nav-search {
       position: relative;
@@ -175,9 +172,8 @@ $pageTitle = "Blog - " . $site_name;
       }
 
       nav.menu-open {
-        background: transparent;
+        background: var(--white);
         border-bottom: none;
-        backdrop-filter: none;
       }
 
       .nav-hamburger {
@@ -185,157 +181,203 @@ $pageTitle = "Blog - " . $site_name;
       }
     }
 
-    /* HERO */
-    .hero {
+    /* PAGE HEADER */
+    .page-header {
       padding: 8rem 2rem 4rem;
-      background: var(--light);
       text-align: center;
+      background: var(--light);
     }
 
-    .hero h1 {
+    .page-header h1 {
       font-family: 'Fraunces', serif;
-      font-size: clamp(2.5rem, 6vw, 4rem);
+      font-size: 2.5rem;
       font-weight: 700;
       letter-spacing: -0.03em;
       line-height: 1.1;
-      margin-bottom: 1.5rem;
+      color: var(--black);
+      margin-bottom: 1rem;
     }
 
-    .hero p {
-      font-size: 1.1rem;
+    .page-header p {
       color: var(--grey);
+      font-size: 1rem;
       max-width: 600px;
       margin: 0 auto;
     }
 
-    /* BLOG GRID */
-    .blog-grid {
+    /* PRICING SECTION */
+    .pricing-section {
+      padding: 4rem 2rem;
       max-width: 1200px;
-      margin: 4rem auto;
-      padding: 0 2rem;
+      margin: 0 auto;
+    }
+
+    .pricing-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
       gap: 2rem;
     }
 
-    .blog-card {
+    .pricing-card {
+      background: var(--white);
       border: 1px solid var(--border);
-      border-radius: 16px;
-      overflow: hidden;
+      border-radius: 20px;
+      padding: 3rem 2rem;
+      text-align: center;
       transition: transform 0.2s, box-shadow 0.2s;
     }
 
-    .blog-card:hover {
+    .pricing-card:hover {
       transform: translateY(-4px);
-      box-shadow: 0 12px 40px rgba(0,0,0,0.08);
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.08);
     }
 
-    .blog-image {
-      height: 200px;
-      background: linear-gradient(135deg, var(--accent), #4F6FFF);
+    .pricing-card.featured {
+      border-color: var(--accent);
+      background: linear-gradient(135deg, var(--white) 0%, #F8F9FF 100%);
     }
 
-    .blog-content {
-      padding: 1.5rem;
-    }
-
-    .blog-category {
+    .pricing-badge {
+      display: inline-block;
+      background: var(--accent);
+      color: var(--white);
       font-size: 0.75rem;
       font-weight: 600;
       letter-spacing: 0.1em;
       text-transform: uppercase;
-      color: var(--accent);
-      margin-bottom: 0.75rem;
+      padding: 0.4rem 1rem;
+      border-radius: 100px;
+      margin-bottom: 1.5rem;
     }
 
-    .blog-title {
+    .pricing-card h3 {
       font-family: 'Fraunces', serif;
-      font-size: 1.25rem;
-      font-weight: 700;
-      letter-spacing: -0.025em;
-      margin-bottom: 0.75rem;
-      line-height: 1.3;
-    }
-
-    .blog-excerpt {
-      font-size: 0.9rem;
-      color: var(--grey);
-      line-height: 1.6;
+      font-size: 1.5rem;
+      font-weight: 600;
       margin-bottom: 1rem;
     }
 
-    .blog-link {
+    .pricing-price {
+      font-family: 'Fraunces', serif;
+      font-size: 3rem;
+      font-weight: 700;
+      letter-spacing: -0.04em;
+      line-height: 1;
+      margin-bottom: 0.5rem;
+    }
+
+    .pricing-price span {
+      font-size: 1rem;
+      font-weight: 500;
+      color: var(--grey);
+    }
+
+    .pricing-description {
+      color: var(--grey);
+      font-size: 0.95rem;
+      margin-bottom: 2rem;
+    }
+
+    .pricing-features {
+      list-style: none;
+      margin-bottom: 2rem;
+      text-align: left;
+    }
+
+    .pricing-features li {
+      padding: 0.75rem 0;
+      border-bottom: 1px solid var(--border);
+      color: var(--grey);
       font-size: 0.9rem;
-      font-weight: 600;
+    }
+
+    .pricing-features li:last-child {
+      border-bottom: none;
+    }
+
+    .pricing-features li i {
       color: var(--accent);
-      text-decoration: none;
+      margin-right: 0.75rem;
     }
 
-    .blog-link:hover {
-      text-decoration: underline;
-    }
-
-    /* CTA */
-    .cta-section {
-      max-width: 800px;
-      margin: 4rem auto;
-      padding: 3rem 2rem;
-      text-align: center;
-      background: var(--light);
-      border-radius: 16px;
-    }
-
-    .cta-section a {
+    .pricing-btn {
       display: inline-block;
+      padding: 1rem 2rem;
+      border-radius: 100px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      text-decoration: none;
+      transition: all 0.2s;
+    }
+
+    .pricing-btn.primary {
       background: var(--black);
       color: var(--white);
-      padding: 0.85rem 2rem;
-      border-radius: 100px;
-      text-decoration: none;
-      font-weight: 600;
-      margin-top: 1.5rem;
+    }
+
+    .pricing-btn.primary:hover {
+      background: var(--accent);
+    }
+
+    .pricing-btn.secondary {
+      background: var(--light);
+      color: var(--black);
+      border: 1px solid var(--border);
+    }
+
+    .pricing-btn.secondary:hover {
+      background: var(--border);
     }
 
     /* FOOTER */
     footer {
       background: var(--black);
       color: var(--white);
-      padding: 3rem 2rem;
-      text-align: center;
+      padding: 4rem 2rem;
+      margin-top: 4rem;
     }
 
-    .footer-logo {
+    .footer-content {
+      max-width: 1400px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 3rem;
+    }
+
+    .footer-col h4 {
       font-family: 'Fraunces', serif;
-      font-size: 1.25rem;
-      color: var(--white);
-      text-decoration: none;
-      display: block;
-      margin-bottom: 1.5rem;
+      font-size: 1rem;
+      font-weight: 600;
+      margin-bottom: 1rem;
     }
 
-    .footer-links {
-      display: flex;
-      justify-content: center;
-      gap: 2rem;
+    .footer-col ul {
       list-style: none;
-      margin-bottom: 1.5rem;
-      flex-wrap: wrap;
     }
 
-    .footer-links a {
+    .footer-col ul li {
+      margin-bottom: 0.5rem;
+    }
+
+    .footer-col ul li a {
       color: var(--grey);
       text-decoration: none;
-      font-size: 0.9rem;
       transition: color 0.2s;
     }
 
-    .footer-links a:hover {
+    .footer-col ul li a:hover {
       color: var(--white);
     }
 
-    .footer-copy {
+    .footer-bottom {
+      max-width: 1400px;
+      margin: 3rem auto 0;
+      padding-top: 2rem;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+      text-align: center;
       color: var(--grey);
-      font-size: 0.85rem;
+      font-size: 0.875rem;
     }
   </style>
 </head>
@@ -373,109 +415,103 @@ $pageTitle = "Blog - " . $site_name;
     </button>
   </nav>
 
-  <!-- HERO -->
-  <section class="hero">
-    <h1>Blog</h1>
-    <p>Tips, tutorials, and insights to help you make the most of your website.</p>
+  <!-- PAGE HEADER -->
+  <div class="page-header">
+    <h1>Simple, Transparent Pricing</h1>
+    <p>Choose the perfect website for your needs at competitive prices</p>
+  </div>
+
+  <!-- PRICING SECTION -->
+  <section class="pricing-section">
+    <div class="pricing-grid">
+      <div class="pricing-card">
+        <h3>Standard</h3>
+        <div class="pricing-price">$49 <span>per website</span></div>
+        <p class="pricing-description">Perfect for small businesses and personal projects</p>
+        <ul class="pricing-features">
+          <li><i class="fas fa-check"></i> Full source code</li>
+          <li><i class="fas fa-check"></i> 6 months support</li>
+          <li><i class="fas fa-check"></i> Free updates</li>
+          <li><i class="fas fa-check"></i> Documentation included</li>
+          <li><i class="fas fa-check"></i> Commercial license</li>
+        </ul>
+        <a href="browse.php" class="pricing-btn secondary">Browse Standard</a>
+      </div>
+
+      <div class="pricing-card featured">
+        <div class="pricing-badge">Most Popular</div>
+        <h3>Premium</h3>
+        <div class="pricing-price">$99 <span>per website</span></div>
+        <p class="pricing-description">Best value for growing businesses with advanced features</p>
+        <ul class="pricing-features">
+          <li><i class="fas fa-check"></i> Full source code</li>
+          <li><i class="fas fa-check"></i> 12 months priority support</li>
+          <li><i class="fas fa-check"></i> Free updates</li>
+          <li><i class="fas fa-check"></i> Documentation included</li>
+          <li><i class="fas fa-check"></i> Commercial license</li>
+          <li><i class="fas fa-check"></i> Custom installation help</li>
+          <li><i class="fas fa-check"></i> 1 hour consultation</li>
+        </ul>
+        <a href="browse.php" class="pricing-btn primary">Browse Premium</a>
+      </div>
+
+      <div class="pricing-card">
+        <h3>Enterprise</h3>
+        <div class="pricing-price">$199 <span>per website</span></div>
+        <p class="pricing-description">Complete solution for large organizations</p>
+        <ul class="pricing-features">
+          <li><i class="fas fa-check"></i> Full source code</li>
+          <li><i class="fas fa-check"></i> 24 months priority support</li>
+          <li><i class="fas fa-check"></i> Free updates</li>
+          <li><i class="fas fa-check"></i> Documentation included</li>
+          <li><i class="fas fa-check"></i> Commercial license</li>
+          <li><i class="fas fa-check"></i> Custom installation help</li>
+          <li><i class="fas fa-check"></i> 3 hours consultation</li>
+          <li><i class="fas fa-check"></i> Priority bug fixes</li>
+        </ul>
+        <a href="browse.php" class="pricing-btn secondary">Browse Enterprise</a>
+      </div>
+    </div>
   </section>
-
-  <!-- BLOG GRID -->
-  <div class="blog-grid">
-    <div class="blog-card">
-      <div class="blog-image" style="background: linear-gradient(135deg, #1A3BFF, #4F6FFF);"></div>
-      <div class="blog-content">
-        <div class="blog-category">Tips & Tricks</div>
-        <h3 class="blog-title">How to Choose the Right Website Template</h3>
-        <p class="blog-excerpt">Learn the key factors to consider when selecting a website template for your project.</p>
-        <a href="#" class="blog-link">Read More →</a>
-      </div>
-    </div>
-
-    <div class="blog-card">
-      <div class="blog-image" style="background: linear-gradient(135deg, #22C55E, #4ADE80);"></div>
-      <div class="blog-content">
-        <div class="blog-category">Tutorial</div>
-        <h3 class="blog-title">Getting Started with Your New Website</h3>
-        <p class="blog-excerpt">A step-by-step guide to setting up and customizing your purchased website.</p>
-        <a href="#" class="blog-link">Read More →</a>
-      </div>
-    </div>
-
-    <div class="blog-card">
-      <div class="blog-image" style="background: linear-gradient(135deg, #F59E0B, #FBBF24);"></div>
-      <div class="blog-content">
-        <div class="blog-category">News</div>
-        <h3 class="blog-title">New Payment Methods Available</h3>
-        <p class="blog-excerpt">We've added more payment options to make your shopping experience even better.</p>
-        <a href="#" class="blog-link">Read More →</a>
-      </div>
-    </div>
-
-    <div class="blog-card">
-      <div class="blog-image" style="background: linear-gradient(135deg, #06B6D4, #22D3EE);"></div>
-      <div class="blog-content">
-        <div class="blog-category">Security</div>
-        <h3 class="blog-title">Protecting Your Digital Downloads</h3>
-        <p class="blog-excerpt">Best practices for securing your purchased digital files and assets.</p>
-        <a href="#" class="blog-link">Read More →</a>
-      </div>
-    </div>
-
-    <div class="blog-card">
-      <div class="blog-image" style="background: linear-gradient(135deg, #EC4899, #F472B6);"></div>
-      <div class="blog-content">
-        <div class="blog-category">Features</div>
-        <h3 class="blog-title">Top 5 Website Features You Need</h3>
-        <p class="blog-excerpt">Essential features every modern website should have to succeed online.</p>
-        <a href="#" class="blog-link">Read More →</a>
-      </div>
-    </div>
-
-    <div class="blog-card">
-      <div class="blog-image" style="background: linear-gradient(135deg, #8B5CF6, #A78BFA);"></div>
-      <div class="blog-content">
-        <div class="blog-category">Updates</div>
-        <h3 class="blog-title">Platform Updates Coming Soon</h3>
-        <p class="blog-excerpt">Exciting new features and improvements coming to our platform.</p>
-        <a href="#" class="blog-link">Read More →</a>
-      </div>
-    </div>
-  </div>
-
-  <!-- CTA -->
-  <div class="cta-section">
-    <p style="color:var(--grey);">More articles coming soon!</p>
-    <a href="index.php">Browse Our Products →</a>
-  </div>
 
   <!-- FOOTER -->
   <footer>
-    <a href="index.php" class="footer-logo"><?php echo htmlspecialchars($site_name); ?></a>
-    <ul class="footer-links">
-      <li><a href="index.php">Home</a></li>
-      <li><a href="about.php">About</a></li>
-      <li><a href="blog.php">Blog</a></li>
-      <li><a href="contact.php">Contact</a></li>
-      <li><a href="cart.php">Cart</a></li>
-      <li><a href="privacy.php">Privacy Policy</a></li>
-      <li><a href="terms.php">Terms of Use</a></li>
-    </ul>
-    <span class="footer-copy">© <?php echo date('Y'); ?> <?php echo htmlspecialchars($site_name); ?>. All rights reserved.</span>
+    <div class="footer-content">
+      <div class="footer-col">
+        <h4><?php echo htmlspecialchars($site_name); ?></h4>
+        <p style="color:var(--grey);font-size:0.9rem;">Premium websites for your business.</p>
+      </div>
+      <div class="footer-col">
+        <h4>Quick Links</h4>
+        <ul>
+          <li><a href="index.php">Home</a></li>
+          <li><a href="browse.php">Browse</a></li>
+          <li><a href="categories.php">Categories</a></li>
+          <li><a href="contact.php">Contact</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <ul>
+          <li><a href="privacy.php">Privacy Policy</a></li>
+          <li><a href="terms.php">Terms of Service</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      &copy; <?php echo date('Y'); ?> <?php echo htmlspecialchars($site_name); ?>. All rights reserved.
+    </div>
   </footer>
 
   <script>
+    // Mobile menu toggle
     const hamburger = document.getElementById('hamburger');
     const navLinks = document.getElementById('navLinks');
     const nav = document.querySelector('nav');
+
     hamburger.addEventListener('click', () => {
       navLinks.classList.toggle('open');
       nav.classList.toggle('menu-open');
-    });
-    navLinks.querySelectorAll('a').forEach(a => {
-      a.addEventListener('click', () => {
-        navLinks.classList.remove('open');
-        nav.classList.remove('menu-open');
-      });
     });
   </script>
 </body>

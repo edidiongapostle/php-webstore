@@ -26,6 +26,9 @@ if (!$website) {
 $enable_reviews = getSetting('enable_reviews', '1');
 $enable_wishlist = getSetting('enable_wishlist', '1');
 $site_name = getSetting('site_name', 'WebStore');
+$seo_title = getSetting('seo_title', 'Premium Websites for Sale');
+$seo_description = getSetting('seo_description', 'Buy premium websites and templates for your business');
+$seo_keywords = getSetting('seo_keywords', 'websites, templates, premium, business');
 
 $pageTitle = htmlspecialchars($website['title']) . " - " . $site_name;
 ?>
@@ -33,354 +36,914 @@ $pageTitle = htmlspecialchars($website['title']) . " - " . $site_name;
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?php echo $pageTitle; ?></title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title><?php echo htmlspecialchars($pageTitle); ?></title>
+  <meta name="description" content="<?php echo htmlspecialchars($seo_description); ?>">
+  <meta name="keywords" content="<?php echo htmlspecialchars($seo_keywords); ?>">
+  <meta name="author" content="<?php echo htmlspecialchars($site_name); ?>">
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,600;0,9..144,700;1,9..144,300;1,9..144,600&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --white:   #FFFFFF;
+      --black:   #0D0D0D;
+      --grey:    #6B6B6B;
+      --light:   #F5F5F3;
+      --border:  #E4E4E0;
+      --accent:  #1A3BFF;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--white);
+      color: var(--black);
+      line-height: 1.6;
+    }
+
+    /* NAV */
+    nav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 1000;
+      background: rgba(255,255,255,0.95);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--border);
+      padding: 1.25rem 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .nav-logo {
+      font-family: 'Fraunces', serif;
+      font-size: 1.5rem;
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      color: var(--black);
+      text-decoration: none;
+    }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 2rem;
+      list-style: none;
+    }
+
+    .nav-links a {
+      font-size: 0.9rem;
+      font-weight: 500;
+      color: var(--grey);
+      text-decoration: none;
+      transition: color 0.2s;
+      position: relative;
+    }
+
+    .nav-links a:hover {
+      color: var(--black);
+    }
+
+    .nav-search {
+      position: relative;
+    }
+
+    .nav-search input {
+      padding: 0.5rem 1rem 0.5rem 2.5rem;
+      border: 1px solid var(--border);
+      border-radius: 100px;
+      font-size: 0.85rem;
+      font-family: 'Inter', sans-serif;
+      width: 200px;
+      outline: none;
+      transition: border-color 0.2s, width 0.2s;
+    }
+
+    .nav-search input:focus {
+      border-color: var(--accent);
+      width: 250px;
+    }
+
+    .nav-search i {
+      position: absolute;
+      left: 0.85rem;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--grey);
+      font-size: 0.85rem;
+      pointer-events: none;
+    }
+
+    .nav-cta {
+      background: var(--black);
+      color: var(--white) !important;
+      padding: 0.6rem 1.2rem;
+      border-radius: 100px;
+      transition: background 0.2s;
+    }
+
+    .nav-cta:hover {
+      background: #1a1a1a;
+    }
+
+    .nav-hamburger {
+      display: none;
+      flex-direction: column;
+      gap: 0.35rem;
+      background: none;
+      border: none;
+      cursor: pointer;
+    }
+
+    .nav-hamburger span {
+      width: 24px;
+      height: 2px;
+      background: var(--black);
+      transition: 0.2s;
+    }
+
+    @media (max-width: 768px) {
+      .nav-links {
+        position: fixed;
+        top: 70px;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        flex-direction: column;
+        background: var(--white);
+        padding: 2rem;
+        gap: 1.5rem;
+        transform: translateX(100%);
+        transition: transform 0.3s ease;
+      }
+
+      .nav-links.open {
+        transform: translateX(0);
+      }
+
+      nav.menu-open {
+        background: transparent;
+        border-bottom: none;
+        backdrop-filter: none;
+      }
+
+      .nav-hamburger {
+        display: flex;
+      }
+    }
+
+    /* HERO */
+    .hero {
+      padding: 8rem 2rem 4rem;
+      background: var(--light);
+      text-align: center;
+    }
+
+    .hero h1 {
+      font-family: 'Fraunces', serif;
+      font-size: clamp(2.5rem, 6vw, 4rem);
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      line-height: 1.1;
+      margin-bottom: 1.5rem;
+    }
+
+    .hero p {
+      font-size: 1.1rem;
+      color: var(--grey);
+      max-width: 600px;
+      margin: 0 auto 2rem;
+    }
+
+    /* CONTENT */
+    .content {
+      max-width: 1200px;
+      margin: 4rem auto;
+      padding: 0 2rem;
+    }
+
+    .product-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 3rem;
+    }
+
+    @media (max-width: 900px) {
+      .product-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .product-image {
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      overflow: hidden;
+      background: var(--white);
+    }
+
+    .product-image img {
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+
+    .screenshots {
+      margin-top: 1.5rem;
+    }
+
+    .screenshots h3 {
+      font-family: 'Fraunces', serif;
+      font-size: 1.25rem;
+      font-weight: 600;
+      margin-bottom: 1rem;
+    }
+
+    .screenshot-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1rem;
+    }
+
+    @media (max-width: 600px) {
+      .screenshot-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    .screenshot-item {
+      position: relative;
+      cursor: pointer;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    .screenshot-item img {
+      width: 100%;
+      height: 120px;
+      object-fit: cover;
+      transition: opacity 0.2s;
+    }
+
+    .screenshot-item:hover img {
+      opacity: 0.9;
+    }
+
+    .demo-link {
+      display: inline-flex;
+      align-items: center;
+      background: var(--accent);
+      color: var(--white);
+      padding: 0.75rem 1.5rem;
+      border-radius: 100px;
+      text-decoration: none;
+      font-weight: 500;
+      margin-top: 1.5rem;
+      transition: background 0.2s;
+    }
+
+    .demo-link:hover {
+      background: #0d2be0;
+    }
+
+    .product-info {
+      display: flex;
+      flex-direction: column;
+      gap: 2rem;
+    }
+
+    .product-header {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 1rem;
+    }
+
+    .badge {
+      background: var(--light);
+      color: var(--black);
+      padding: 0.35rem 0.75rem;
+      border-radius: 100px;
+      font-size: 0.85rem;
+      font-weight: 500;
+    }
+
+    .badge.featured {
+      background: #FEF3C7;
+      color: #92400E;
+    }
+
+    .product-title {
+      font-family: 'Fraunces', serif;
+      font-size: 2.5rem;
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      line-height: 1.1;
+      margin-bottom: 1rem;
+    }
+
+    .price {
+      font-size: 2rem;
+      font-weight: 700;
+      color: var(--accent);
+      margin-bottom: 0.5rem;
+    }
+
+    .price-note {
+      color: var(--grey);
+      font-size: 0.9rem;
+    }
+
+    .description {
+      color: var(--grey);
+      line-height: 1.8;
+    }
+
+    .features-list {
+      background: var(--light);
+      padding: 1.5rem;
+      border-radius: 12px;
+    }
+
+    .features-list h3 {
+      font-family: 'Fraunces', serif;
+      font-size: 1.25rem;
+      font-weight: 600;
+      margin-bottom: 1rem;
+    }
+
+    .feature-item {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 0.75rem;
+      color: var(--grey);
+    }
+
+    .feature-item i {
+      color: #22C55E;
+    }
+
+    .tech-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+
+    .tech-tag {
+      background: var(--light);
+      color: var(--grey);
+      padding: 0.35rem 0.75rem;
+      border-radius: 100px;
+      font-size: 0.85rem;
+    }
+
+    .actions {
+      display: flex;
+      gap: 1rem;
+      padding-top: 2rem;
+      border-top: 1px solid var(--border);
+    }
+
+    .btn {
+      flex: 1;
+      padding: 0.875rem 1.5rem;
+      border-radius: 100px;
+      font-weight: 500;
+      text-align: center;
+      text-decoration: none;
+      transition: background 0.2s;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      color: var(--white);
+    }
+
+    .btn-primary:hover {
+      background: #0d2be0;
+    }
+
+    .btn-secondary {
+      background: #EC4899;
+      color: var(--white);
+    }
+
+    .btn-secondary:hover {
+      background: #db2777;
+    }
+
+    .btn-ghost {
+      background: var(--light);
+      color: var(--black);
+    }
+
+    .btn-ghost:hover {
+      background: #e8e8e6;
+    }
+
+    .info-box {
+      background: #EFF6FF;
+      border: 1px solid #BFDBFE;
+      padding: 1.5rem;
+      border-radius: 12px;
+    }
+
+    .info-box h4 {
+      font-family: 'Fraunces', serif;
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: #1E40AF;
+      margin-bottom: 0.75rem;
+    }
+
+    .info-box ul {
+      list-style: none;
+      color: #1E40AF;
+      font-size: 0.9rem;
+    }
+
+    .info-box li {
+      margin-bottom: 0.5rem;
+    }
+
+    /* REVIEWS */
+    .reviews-section {
+      max-width: 1200px;
+      margin: 4rem auto;
+      padding: 0 2rem;
+    }
+
+    .reviews-card {
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 2rem;
+      background: var(--white);
+    }
+
+    .reviews-card h2 {
+      font-family: 'Fraunces', serif;
+      font-size: 2rem;
+      font-weight: 700;
+      margin-bottom: 2rem;
+    }
+
+    .review-form {
+      background: var(--light);
+      padding: 1.5rem;
+      border-radius: 12px;
+      margin-bottom: 2rem;
+    }
+
+    .review-form h3 {
+      font-family: 'Fraunces', serif;
+      font-size: 1.25rem;
+      font-weight: 600;
+      margin-bottom: 1rem;
+    }
+
+    .form-group {
+      margin-bottom: 1rem;
+    }
+
+    .form-group label {
+      display: block;
+      font-weight: 500;
+      margin-bottom: 0.5rem;
+      color: var(--grey);
+    }
+
+    .form-group select,
+    .form-group textarea {
+      width: 100%;
+      padding: 0.75rem;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.95rem;
+    }
+
+    .form-group textarea {
+      resize: vertical;
+      min-height: 100px;
+    }
+
+    /* FOOTER */
+    footer {
+      background: var(--black);
+      color: var(--white);
+      padding: 3rem 2rem;
+      text-align: center;
+      margin-top: 4rem;
+    }
+
+    .footer-logo {
+      font-family: 'Fraunces', serif;
+      font-size: 1.25rem;
+      color: var(--white);
+      text-decoration: none;
+      display: block;
+      margin-bottom: 1.5rem;
+    }
+
+    .footer-links {
+      display: flex;
+      justify-content: center;
+      gap: 2rem;
+      list-style: none;
+      margin-bottom: 1.5rem;
+    }
+
+    .footer-links a {
+      color: var(--grey);
+      text-decoration: none;
+      font-size: 0.9rem;
+      transition: color 0.2s;
+    }
+
+    .footer-links a:hover {
+      color: var(--white);
+    }
+
+    .footer-copy {
+      color: var(--grey);
+      font-size: 0.85rem;
+    }
+
+    /* MODAL */
+    .modal {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.75);
+      z-index: 2000;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+    }
+
+    .modal.active {
+      display: flex;
+    }
+
+    .modal-content {
+      background: var(--white);
+      border-radius: 16px;
+      max-width: 900px;
+      max-height: 90vh;
+      overflow: auto;
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1.5rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .modal-header h3 {
+      font-family: 'Fraunces', serif;
+      font-size: 1.25rem;
+      font-weight: 600;
+    }
+
+    .modal-close {
+      background: none;
+      border: none;
+      font-size: 1.5rem;
+      cursor: pointer;
+      color: var(--grey);
+    }
+
+    .modal-body {
+      padding: 1.5rem;
+    }
+
+    .modal-body img {
+      width: 100%;
+      height: auto;
+      border-radius: 8px;
+    }
+
+    .modal-footer {
+      padding: 1.5rem;
+      border-top: 1px solid var(--border);
+      background: var(--light);
+    }
+
+    .modal-footer button {
+      width: 100%;
+      padding: 0.875rem;
+      background: var(--grey);
+      color: var(--white);
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+  </style>
 </head>
-<body class="bg-gray-50">
-    <!-- Navigation -->
-    <nav class="bg-white shadow-lg sticky top-0 z-50">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between h-16">
-                <div class="flex items-center">
-                    <h1 class="text-2xl font-bold text-indigo-600">WebStore</h1>
-                </div>
-                <div class="flex items-center space-x-4">
-                    <a href="index.php" class="text-gray-700 hover:text-indigo-600 px-3 py-2 rounded-md text-sm font-medium hidden md:block">Home</a>
-                    <a href="cart.php" class="relative text-gray-700 hover:text-indigo-600 px-3 py-2 rounded-md text-sm font-medium hidden md:block">
-                        <i class="fas fa-shopping-cart"></i>
-                        <?php 
-                        $cart_count = getCartCount();
-                        if ($cart_count > 0): 
-                        ?>
-                            <span class="absolute -top-1 -right-1 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs">
-                                <?php echo $cart_count; ?>
-                            </span>
-                        <?php endif; ?>
-                    </a>
-                    <a href="admin/login.php" class="bg-indigo-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-indigo-700 hidden md:block">Admin</a>
-                </div>
-                
-                <!-- Mobile menu button -->
-                <div class="md:hidden flex items-center">
-                    <button id="mobile-menu-button" class="text-gray-700 hover:text-indigo-600 focus:outline-none focus:text-indigo-600">
-                        <i class="fas fa-bars text-xl"></i>
-                    </button>
-                </div>
-            </div>
-            
-            <!-- Mobile Navigation -->
-            <div id="mobile-menu" class="hidden md:hidden pb-4">
-                <div class="flex flex-col space-y-2">
-                    <a href="index.php" class="text-gray-700 hover:text-indigo-600 px-3 py-2 rounded-md text-sm font-medium">Home</a>
-                    <a href="cart.php" class="relative text-gray-700 hover:text-indigo-600 px-3 py-2 rounded-md text-sm font-medium">
-                        <i class="fas fa-shopping-cart mr-2"></i>
-                        Cart
-                        <?php 
-                        $cart_count = getCartCount();
-                        if ($cart_count > 0): 
-                        ?>
-                            <span class="ml-2 bg-red-500 text-white rounded-full px-2 py-1 text-xs">
-                                <?php echo $cart_count; ?>
-                            </span>
-                        <?php endif; ?>
-                    </a>
-                    <a href="admin/login.php" class="bg-indigo-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-indigo-700">Admin</a>
-                </div>
-            </div>
-        </div>
-    </nav>
+<body>
+  <!-- NAV -->
+  <nav>
+    <a href="index.php" class="nav-logo"><?php echo htmlspecialchars($site_name); ?></a>
+    <ul class="nav-links" id="navLinks">
+      <li><a href="browse.php">Browse</a></li>
+      <li><a href="categories.php">Categories</a></li>
+      <li><a href="pricing.php">Pricing</a></li>
+      <li><a href="documentation.php">Documentation</a></li>
+      <li><a href="blog.php">Blog</a></li>
+      <li><a href="contact.php">Contact</a></li>
+      <li class="nav-search">
+        <form action="browse.php" method="GET">
+          <i class="fas fa-search"></i>
+          <input type="text" name="search" placeholder="Search...">
+        </form>
+      </li>
+      <li><a href="cart.php" class="relative" style="position:relative">
+        <i class="fas fa-shopping-cart"></i>
+        <?php
+        $cart_count = getCartCount();
+        if ($cart_count > 0):
+        ?>
+          <span style="position:absolute;top:-6px;right:-8px;background:#EF4444;color:white;border-radius:50%;width:18px;height:18px;font-size:10px;display:flex;align-items:center;justify-content:center;z-index:1"><?php echo $cart_count; ?></span>
+        <?php endif; ?>
+      </a></li>
+      <li><a href="admin/login.php" class="nav-cta">Admin</a></li>
+    </ul>
+    <button class="nav-hamburger" id="hamburger" aria-label="Menu">
+      <span></span><span></span><span></span>
+    </button>
+  </nav>
 
-    <!-- Breadcrumb -->
-    <div class="bg-white border-b">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-            <nav class="flex" aria-label="Breadcrumb">
-                <ol class="flex items-center space-x-2">
-                    <li><a href="index.php" class="text-gray-500 hover:text-gray-700">Home</a></li>
-                    <li><span class="text-gray-400">/</span></li>
-                    <li><span class="text-gray-700"><?php echo htmlspecialchars($website['title']); ?></span></li>
-                </ol>
-            </nav>
-        </div>
-    </div>
+  <!-- HERO -->
+  <section class="hero">
+    <h1><?php echo htmlspecialchars($website['title']); ?></h1>
+    <p><?php echo htmlspecialchars($website['description']); ?></p>
+  </section>
 
-    <!-- Product Details -->
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-12">
-            <!-- Product Image -->
-            <div class="space-y-4">
-                <div class="bg-white rounded-lg shadow-lg overflow-hidden">
-                    <img src="<?php echo htmlspecialchars($website['image_url']); ?>" alt="<?php echo htmlspecialchars($website['title']); ?>" class="w-full h-96 object-cover">
-                </div>
-                
-                <!-- Screenshots Gallery -->
-                <?php if (!empty($website['screenshots'])): ?>
-                    <div class="bg-white rounded-lg shadow-lg p-6">
-                        <h3 class="text-lg font-semibold mb-4">Screenshots</h3>
-                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                            <?php 
-                            $screenshots = json_decode($website['screenshots'] ?? '[]', true) ?: [];
-                            foreach ($screenshots as $screenshot): 
-                                if (!empty($screenshot)): ?>
-                                    <div class="relative group cursor-pointer" onclick="openScreenshotModal('<?php echo htmlspecialchars($screenshot); ?>')">
-                                        <img src="<?php echo htmlspecialchars($screenshot); ?>" alt="Website Screenshot" class="w-full h-48 object-cover rounded-lg hover:opacity-90 transition">
-                                        <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-10 transition rounded-lg flex items-center justify-center">
-                                            <i class="fas fa-search-plus text-white opacity-0 group-hover:opacity-100 transition text-2xl"></i>
-                                        </div>
-                                    </div>
-                                <?php endif; ?>
-                            <?php endforeach; ?>
-                        </div>
-                    </div>
-                <?php endif; ?>
-                <?php if ($website['demo_url']): ?>
-                    <div class="bg-white rounded-lg shadow-lg p-6">
-                        <h3 class="text-lg font-semibold mb-4">Live Demo</h3>
-                        <a href="<?php echo htmlspecialchars($website['demo_url']); ?>" target="_blank" class="inline-flex items-center bg-indigo-600 text-white px-6 py-3 rounded-lg hover:bg-indigo-700 transition">
-                            <i class="fas fa-external-link-alt mr-2"></i>
-                            View Live Demo
-                        </a>
-                    </div>
-                <?php endif; ?>
-            </div>
-
-            <!-- Product Info -->
-            <div class="space-y-6">
-                <div>
-                    <div class="flex items-center space-x-2 mb-2">
-                        <span class="bg-indigo-100 text-indigo-800 px-3 py-1 rounded-full text-sm font-medium">
-                            <?php echo htmlspecialchars($website['category']); ?>
-                        </span>
-                        <?php if ($website['featured']): ?>
-                            <span class="bg-red-100 text-red-800 px-3 py-1 rounded-full text-sm font-medium">Featured</span>
-                        <?php endif; ?>
-                    </div>
-                    <h1 class="text-3xl font-bold text-gray-900 mb-4"><?php echo htmlspecialchars($website['title']); ?></h1>
-                    <div class="flex items-center space-x-4 mb-6">
-                        <span class="text-4xl font-bold text-indigo-600"><?php echo formatPrice($website['price']); ?></span>
-                        <span class="text-gray-500">One-time payment</span>
-                    </div>
-                </div>
-
-                <div>
-                    <h3 class="text-lg font-semibold mb-3">Description</h3>
-                    <p class="text-gray-600 leading-relaxed"><?php echo nl2br(htmlspecialchars($website['description'])); ?></p>
-                </div>
-
-                <?php if ($website['features']): ?>
-                    <div>
-                        <h3 class="text-lg font-semibold mb-3">Features</h3>
-                        <div class="bg-gray-50 rounded-lg p-4">
-                            <?php 
-                            $features = explode(',', $website['features']);
-                            foreach ($features as $feature): ?>
-                                <div class="flex items-center mb-2">
-                                    <i class="fas fa-check-circle text-green-500 mr-2"></i>
-                                    <span><?php echo htmlspecialchars(trim($feature)); ?></span>
-                                </div>
-                            <?php endforeach; ?>
-                        </div>
-                    </div>
-                <?php endif; ?>
-
-                <?php if ($website['technologies']): ?>
-                    <div>
-                        <h3 class="text-lg font-semibold mb-3">Technologies Used</h3>
-                        <div class="flex flex-wrap gap-2">
-                            <?php 
-                            $technologies = explode(',', $website['technologies']);
-                            foreach ($technologies as $tech): ?>
-                                <span class="bg-gray-200 text-gray-700 px-3 py-1 rounded-full text-sm">
-                                    <?php echo htmlspecialchars(trim($tech)); ?>
-                                </span>
-                            <?php endforeach; ?>
-                        </div>
-                    </div>
-                <?php endif; ?>
-
-                <!-- Add to Cart Form -->
-                <div class="border-t pt-6">
-                    <form action="add_to_cart.php" method="POST" class="space-y-4">
-                        <input type="hidden" name="website_id" value="<?php echo $website['id']; ?>">
-                        <div class="flex space-x-4">
-                            <button type="submit" class="flex-1 bg-indigo-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-indigo-700 transition">
-                                <i class="fas fa-shopping-cart mr-2"></i>
-                                Add to Cart
-                            </button>
-                            <?php if ($enable_wishlist === '1'): ?>
-                            <button type="button" onclick="addToWishlist(<?php echo $website['id']; ?>)" class="flex-1 bg-pink-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-pink-700 transition">
-                                <i class="fas fa-heart mr-2"></i>
-                                Add to Wishlist
-                            </button>
-                            <?php endif; ?>
-                            <a href="index.php" class="flex-1 bg-gray-200 text-gray-800 px-6 py-3 rounded-lg font-semibold text-center hover:bg-gray-300 transition">
-                                Continue Shopping
-                            </a>
-                        </div>
-                    </form>
-                </div>
-
-                <!-- Additional Info -->
-                <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                    <h4 class="font-semibold text-blue-900 mb-2">What's Included:</h4>
-                    <ul class="text-sm text-blue-800 space-y-1">
-                        <li>• Full source code</li>
-                        <li>• Installation documentation</li>
-                        <li>• 30 days support</li>
-                        <li>• Free updates for 6 months</li>
-                    </ul>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Reviews Section -->
-    <?php if ($enable_reviews === '1'): ?>
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div class="bg-white rounded-lg shadow-lg p-6">
-            <h3 class="text-2xl font-bold mb-6">Customer Reviews</h3>
-            
-            <!-- Review Form -->
-            <div class="mb-8 p-4 bg-gray-50 rounded-lg">
-                <h4 class="font-semibold mb-4">Leave a Review</h4>
-                <form id="reviewForm" class="space-y-4">
-                    <input type="hidden" name="website_id" value="<?php echo $website['id']; ?>">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Rating</label>
-                        <select name="rating" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                            <option value="5">⭐⭐⭐⭐⭐ Excellent</option>
-                            <option value="4">⭐⭐⭐⭐ Very Good</option>
-                            <option value="3">⭐⭐⭐ Good</option>
-                            <option value="2">⭐⭐ Fair</option>
-                            <option value="1">⭐ Poor</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Your Review</label>
-                        <textarea name="review" rows="4" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="Share your experience with this product..."></textarea>
-                    </div>
-                    <button type="submit" class="bg-indigo-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-indigo-700 transition">
-                        <i class="fas fa-star mr-2"></i>
-                        Submit Review
-                    </button>
-                </form>
-            </div>
-            
-            <!-- Reviews List -->
-            <div class="space-y-4">
-                <div class="text-center py-8 text-gray-500">
-                    <i class="fas fa-star text-4xl mb-4"></i>
-                    <p>Be the first to review this product!</p>
-                </div>
-            </div>
-        </div>
-    </div>
-    <?php endif; ?>
-
-    <!-- Footer -->
-    <footer class="bg-gray-800 text-white py-8">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-            <p>&copy; <?php echo date('Y'); ?> <?php echo htmlspecialchars($site_name); ?>. All rights reserved.</p>
-            <p class="mt-2 text-gray-400">Premium websites for your business needs</p>
-        </div>
-    </footer>
-<script>
-        function addToWishlist(websiteId) {
-            // Simple wishlist functionality using localStorage
-            let wishlist = JSON.parse(localStorage.getItem('wishlist') || '[]');
-            
-            if (!wishlist.includes(websiteId)) {
-                wishlist.push(websiteId);
-                localStorage.setItem('wishlist', JSON.stringify(wishlist));
-                alert('Added to wishlist!');
-            } else {
-                alert('Already in wishlist!');
-            }
-        }
+  <!-- CONTENT -->
+  <div class="content">
+    <div class="product-grid">
+      <!-- Product Image -->
+      <div class="product-image">
+        <img src="<?php echo htmlspecialchars($website['image_url']); ?>" alt="<?php echo htmlspecialchars($website['title']); ?>">
         
-        // Review form submission
-        document.getElementById('reviewForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            const formData = new FormData(this);
-            formData.append('action', 'submit_review');
-            
-            fetch('submit_review.php', {
-                method: 'POST',
-                body: formData
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    alert('Review submitted successfully!');
-                    this.reset();
-                    location.reload();
-                } else {
-                    alert('Error: ' + data.message);
-                }
-            })
-            .catch(error => {
-                alert('Error submitting review. Please try again.');
-            });
-        });
-    </script>
+        <!-- Screenshots Gallery -->
+        <?php if (!empty($website['screenshots'])): ?>
+          <div class="screenshots">
+            <h3>Screenshots</h3>
+            <div class="screenshot-grid">
+              <?php 
+              $screenshots = json_decode($website['screenshots'] ?? '[]', true) ?: [];
+              foreach ($screenshots as $screenshot): 
+                if (!empty($screenshot)): ?>
+                  <div class="screenshot-item" onclick="openScreenshotModal('<?php echo htmlspecialchars($screenshot); ?>')">
+                    <img src="<?php echo htmlspecialchars($screenshot); ?>" alt="Website Screenshot">
+                  </div>
+                <?php endif; ?>
+              <?php endforeach; ?>
+            </div>
+          </div>
+        <?php endif; ?>
+        
+        <?php if ($website['demo_url']): ?>
+          <a href="<?php echo htmlspecialchars($website['demo_url']); ?>" target="_blank" class="demo-link">
+            <i class="fas fa-external-link-alt"></i> View Live Demo
+          </a>
+        <?php endif; ?>
+      </div>
+
+      <!-- Product Info -->
+      <div class="product-info">
+        <div class="product-header">
+          <span class="badge"><?php echo htmlspecialchars($website['category']); ?></span>
+          <?php if ($website['featured']): ?>
+            <span class="badge featured">Featured</span>
+          <?php endif; ?>
+        </div>
+        
+        <h1 class="product-title"><?php echo htmlspecialchars($website['title']); ?></h1>
+        <div class="price"><?php echo formatPrice($website['price']); ?></div>
+        <div class="price-note">One-time payment</div>
+        
+        <div class="description">
+          <?php echo nl2br(htmlspecialchars($website['description'])); ?>
+        </div>
+
+        <?php if ($website['features']): ?>
+          <div class="features-list">
+            <h3>Features</h3>
+            <?php 
+            $features = explode(',', $website['features']);
+            foreach ($features as $feature): ?>
+              <div class="feature-item">
+                <i class="fas fa-check-circle"></i>
+                <span><?php echo htmlspecialchars(trim($feature)); ?></span>
+              </div>
+            <?php endforeach; ?>
+          </div>
+        <?php endif; ?>
+
+        <?php if ($website['technologies']): ?>
+          <div>
+            <h3 style="font-family:'Fraunces',serif;font-size:1.25rem;font-weight:600;margin-bottom:1rem">Technologies Used</h3>
+            <div class="tech-tags">
+              <?php 
+              $technologies = explode(',', $website['technologies']);
+              foreach ($technologies as $tech): ?>
+                <span class="tech-tag"><?php echo htmlspecialchars(trim($tech)); ?></span>
+              <?php endforeach; ?>
+            </div>
+          </div>
+        <?php endif; ?>
+
+        <!-- Add to Cart Form -->
+        <div class="actions">
+          <form action="add_to_cart.php" method="POST" style="display:flex;gap:1rem;flex:1">
+            <input type="hidden" name="website_id" value="<?php echo $website['id']; ?>">
+            <button type="submit" class="btn btn-primary">
+              <i class="fas fa-shopping-cart"></i> Add to Cart
+            </button>
+          </form>
+          <?php if ($enable_wishlist === '1'): ?>
+            <button type="button" onclick="addToWishlist(<?php echo $website['id']; ?>)" class="btn btn-secondary">
+              <i class="fas fa-heart"></i> Add to Wishlist
+            </button>
+          <?php endif; ?>
+          <a href="index.php" class="btn btn-ghost">Continue Shopping</a>
+        </div>
+
+        <div class="info-box">
+          <h4>What's Included:</h4>
+          <ul>
+            <li>• Full source code</li>
+            <li>• Installation documentation</li>
+            <li>• 30 days support</li>
+            <li>• Free updates for 6 months</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- REVIEWS -->
+  <?php if ($enable_reviews === '1'): ?>
+  <div class="reviews-section">
+    <div class="reviews-card">
+      <h2>Customer Reviews</h2>
+      
+      <!-- Review Form -->
+      <div class="review-form">
+        <h3>Leave a Review</h3>
+        <form id="reviewForm">
+          <input type="hidden" name="website_id" value="<?php echo $website['id']; ?>">
+          <div class="form-group">
+            <label>Rating</label>
+            <select name="rating">
+              <option value="5">⭐⭐⭐⭐⭐ Excellent</option>
+              <option value="4">⭐⭐⭐⭐ Very Good</option>
+              <option value="3">⭐⭐⭐ Good</option>
+              <option value="2">⭐⭐ Fair</option>
+              <option value="1">⭐ Poor</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Your Review</label>
+            <textarea name="review" rows="4" placeholder="Share your experience with this product..."></textarea>
+          </div>
+          <button type="submit" class="btn btn-primary">
+            <i class="fas fa-star"></i> Submit Review
+          </button>
+        </form>
+      </div>
+      
+      <!-- Reviews List -->
+      <div style="text-align:center;padding:2rem;color:var(--grey)">
+        <i class="fas fa-star" style="font-size:2rem;margin-bottom:1rem"></i>
+        <p>Be the first to review this product!</p>
+      </div>
+    </div>
+  </div>
+  <?php endif; ?>
+
+  <!-- FOOTER -->
+  <footer>
+    <a href="index.php" class="footer-logo"><?php echo htmlspecialchars($site_name); ?></a>
+    <ul class="footer-links">
+      <li><a href="index.php">Home</a></li>
+      <li><a href="about.php">About</a></li>
+      <li><a href="blog.php">Blog</a></li>
+      <li><a href="contact.php">Contact</a></li>
+      <li><a href="cart.php">Cart</a></li>
+      <li><a href="privacy.php">Privacy Policy</a></li>
+      <li><a href="terms.php">Terms of Use</a></li>
+    </ul>
+    <span class="footer-copy">© <?php echo date('Y'); ?> <?php echo htmlspecialchars($site_name); ?>. All rights reserved.</span>
+  </footer>
+
+  <!-- Screenshot Modal -->
+  <div id="screenshotModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Screenshot Preview</h3>
+        <button onclick="closeScreenshotModal()" class="modal-close">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      <div class="modal-body">
+        <img id="modalImage" src="" alt="Screenshot">
+      </div>
+      <div class="modal-footer">
+        <button onclick="closeScreenshotModal()">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const hamburger = document.getElementById('hamburger');
+    const navLinks = document.getElementById('navLinks');
+    const nav = document.querySelector('nav');
+    hamburger.addEventListener('click', () => {
+      navLinks.classList.toggle('open');
+      nav.classList.toggle('menu-open');
+    });
+    navLinks.querySelectorAll('a').forEach(a => {
+      a.addEventListener('click', () => {
+        navLinks.classList.remove('open');
+        nav.classList.remove('menu-open');
+      });
+    });
+
+    function addToWishlist(websiteId) {
+      let wishlist = JSON.parse(localStorage.getItem('wishlist') || '[]');
+      if (!wishlist.includes(websiteId)) {
+        wishlist.push(websiteId);
+        localStorage.setItem('wishlist', JSON.stringify(wishlist));
+        alert('Added to wishlist!');
+      } else {
+        alert('Already in wishlist!');
+      }
+    }
     
-    <!-- Screenshot Modal -->
-    <div id="screenshotModal" class="fixed inset-0 bg-black bg-opacity-75 z-50 hidden flex items-center justify-center p-4">
-        <div class="bg-white rounded-lg max-w-4xl max-h-[90vh] overflow-auto">
-            <div class="flex justify-between items-center p-4 border-b">
-                <h3 class="text-lg font-semibold">Screenshot Preview</h3>
-                <button onclick="closeScreenshotModal()" class="text-gray-500 hover:text-gray-700">
-                    <i class="fas fa-times text-xl"></i>
-                </button>
-            </div>
-            <div class="p-4">
-                <img id="modalImage" src="" alt="Screenshot" class="w-full h-auto rounded-lg">
-            </div>
-            <div class="p-4 border-t bg-gray-50">
-                <button onclick="closeScreenshotModal()" class="w-full bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700 transition">
-                    Close
-                </button>
-            </div>
-        </div>
-    </div>
+    document.getElementById('reviewForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      const formData = new FormData(this);
+      formData.append('action', 'submit_review');
+      fetch('submit_review.php', {
+        method: 'POST',
+        body: formData
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          alert('Review submitted successfully!');
+          this.reset();
+          location.reload();
+        } else {
+          alert('Error: ' + data.message);
+        }
+      })
+      .catch(error => {
+        alert('Error submitting review. Please try again.');
+      });
+    });
+
+    function openScreenshotModal(imageSrc) {
+      const modal = document.getElementById('screenshotModal');
+      const modalImage = document.getElementById('modalImage');
+      modalImage.src = imageSrc;
+      modal.classList.add('active');
+      document.body.style.overflow = 'hidden';
+    }
     
-    <script>
-        function openScreenshotModal(imageSrc) {
-            const modal = document.getElementById('screenshotModal');
-            const modalImage = document.getElementById('modalImage');
-            modalImage.src = imageSrc;
-            modal.classList.remove('hidden');
-            document.body.style.overflow = 'hidden';
-        }
-        
-        function closeScreenshotModal() {
-            const modal = document.getElementById('screenshotModal');
-            modal.classList.add('hidden');
-            document.body.style.overflow = 'auto';
-        }
-        
-        // Close modal when clicking outside
-        document.getElementById('screenshotModal').addEventListener('click', function(e) {
-            if (e.target === this) {
-                closeScreenshotModal();
-            }
-        });
-        
-        // Close modal with Escape key
-        document.addEventListener('keydown', function(e) {
-            if (e.key === 'Escape') {
-                closeScreenshotModal();
-            }
-        });
-        
-        // Mobile menu toggle
-        document.getElementById('mobile-menu-button').addEventListener('click', function() {
-            const mobileMenu = document.getElementById('mobile-menu');
-            mobileMenu.classList.toggle('hidden');
-        });
-    </script>
+    function closeScreenshotModal() {
+      const modal = document.getElementById('screenshotModal');
+      modal.classList.remove('active');
+      document.body.style.overflow = 'auto';
+    }
+    
+    document.getElementById('screenshotModal').addEventListener('click', function(e) {
+      if (e.target === this) {
+        closeScreenshotModal();
+      }
+    });
+    
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') {
+        closeScreenshotModal();
+      }
+    });
+  </script>
 </body>
 </html>

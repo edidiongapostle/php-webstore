@@ -164,6 +164,36 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['confirm_payment'])) {
       color: var(--black);
     }
 
+    .nav-search {
+      position: relative;
+    }
+
+    .nav-search input {
+      padding: 0.5rem 1rem 0.5rem 2.5rem;
+      border: 1px solid var(--border);
+      border-radius: 100px;
+      font-size: 0.85rem;
+      font-family: 'Inter', sans-serif;
+      width: 200px;
+      outline: none;
+      transition: border-color 0.2s, width 0.2s;
+    }
+
+    .nav-search input:focus {
+      border-color: var(--accent);
+      width: 250px;
+    }
+
+    .nav-search i {
+      position: absolute;
+      left: 0.85rem;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--grey);
+      font-size: 0.85rem;
+      pointer-events: none;
+    }
+
     .nav-cta {
       background: var(--black);
       color: var(--white) !important;
@@ -478,10 +508,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['confirm_payment'])) {
   <nav>
     <a href="index.php" class="nav-logo"><?php echo htmlspecialchars($site_name); ?></a>
     <ul class="nav-links" id="navLinks">
-      <li><a href="index.php">Home</a></li>
-      <li><a href="about.php">About</a></li>
+      <li><a href="browse.php">Browse</a></li>
+      <li><a href="categories.php">Categories</a></li>
+      <li><a href="pricing.php">Pricing</a></li>
+      <li><a href="documentation.php">Documentation</a></li>
       <li><a href="blog.php">Blog</a></li>
       <li><a href="contact.php">Contact</a></li>
+      <li class="nav-search">
+        <form action="browse.php" method="GET">
+          <i class="fas fa-search"></i>
+          <input type="text" name="search" placeholder="Search...">
+        </form>
+      </li>
       <li><a href="cart.php" class="relative" style="position:relative">
         <i class="fas fa-shopping-cart"></i>
         <?php

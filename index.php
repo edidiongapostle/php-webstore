@@ -11,8 +11,13 @@ if ($maintenance_mode === '1' && !isset($_SESSION['admin_logged_in'])) {
     exit;
 }
 
-// Get all websites from database
-$websites = getAllWebsites();
+// Handle search query
+$search_query = isset($_GET['search']) ? trim($_GET['search']) : '';
+if (!empty($search_query)) {
+    $websites = searchWebsites($search_query);
+} else {
+    $websites = getFeaturedWebsites();
+}
 
 // Get settings from database
 $site_name = getSetting('site_name', 'WebStore');
@@ -101,6 +106,36 @@ $pageTitle = $seo_title . " - " . $site_name;
     }
 
     .nav-links a:hover { color: var(--black); }
+
+    .nav-search {
+      position: relative;
+    }
+
+    .nav-search input {
+      padding: 0.5rem 1rem 0.5rem 2.5rem;
+      border: 1px solid var(--border);
+      border-radius: 100px;
+      font-size: 0.85rem;
+      font-family: 'Inter', sans-serif;
+      width: 200px;
+      outline: none;
+      transition: border-color 0.2s, width 0.2s;
+    }
+
+    .nav-search input:focus {
+      border-color: var(--accent);
+      width: 250px;
+    }
+
+    .nav-search i {
+      position: absolute;
+      left: 0.85rem;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--grey);
+      font-size: 0.85rem;
+      pointer-events: none;
+    }
 
     .nav-cta {
       background: var(--black);
@@ -812,11 +847,25 @@ $pageTitle = $seo_title . " - " . $site_name;
 
       section { padding: 5rem 5vw; }
       .stats-section { padding: 4rem 5vw; }
+
+      /* Product cards mobile adjustments */
+      .packages-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .pkg-card {
+        padding: 2rem;
+      }
     }
 
     @media (max-width: 480px) {
       h1 { font-size: 2.6rem; }
       .hero-actions { flex-direction: column; align-items: flex-start; }
+
+      /* Product cards mobile adjustments */
+      .pkg-card {
+        padding: 1.5rem;
+      }
     }
 
     /* ── SCROLL REVEAL ── */
@@ -843,17 +892,25 @@ $pageTitle = $seo_title . " - " . $site_name;
   <nav>
     <a href="index.php" class="nav-logo"><?php echo htmlspecialchars($site_name); ?></a>
     <ul class="nav-links" id="navLinks">
-      <li><a href="index.php">Home</a></li>
-      <li><a href="about.php">About</a></li>
+      <li><a href="browse.php">Browse</a></li>
+      <li><a href="categories.php">Categories</a></li>
+      <li><a href="pricing.php">Pricing</a></li>
+      <li><a href="documentation.php">Documentation</a></li>
       <li><a href="blog.php">Blog</a></li>
       <li><a href="contact.php">Contact</a></li>
+      <li class="nav-search">
+        <form action="index.php" method="GET">
+          <i class="fas fa-search"></i>
+          <input type="text" name="search" placeholder="Search..." value="<?php echo htmlspecialchars($search_query); ?>">
+        </form>
+      </li>
       <li><a href="cart.php" class="relative" style="position:relative">
         <i class="fas fa-shopping-cart"></i>
         <?php
         $cart_count = getCartCount();
         if ($cart_count > 0):
         ?>
-          <span class="absolute -top-1 -right-1 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs" style="position:absolute;top:-6px;right:-8px;background:#EF4444;color:white;border-radius:50%;width:18px;height:18px;font-size:10px;display:flex;align-items:center;justify-content:center;z-index:1"><?php echo $cart_count; ?></span>
+          <span style="position:absolute;top:-6px;right:-8px;background:#EF4444;color:white;border-radius:50%;width:18px;height:18px;font-size:10px;display:flex;align-items:center;justify-content:center;z-index:1"><?php echo $cart_count; ?></span>
         <?php endif; ?>
       </a></li>
       <li><a href="admin/login.php" class="nav-cta">Admin</a></li>
@@ -863,116 +920,56 @@ $pageTitle = $seo_title . " - " . $site_name;
     </button>
   </nav>
 
+  <?php if (!empty($search_query)): ?>
+  <!-- Search Header -->
+  <section style="padding:4rem 2rem 2rem;text-align:center;">
+    <h1 style="font-family:'Fraunces',serif;font-size:2.5rem;font-weight:700;letter-spacing:-0.03em;line-height:1.1;color:var(--black);margin-bottom:1rem;">
+      Search Results for "<?php echo htmlspecialchars($search_query); ?>"
+    </h1>
+    <p style="color:var(--grey);font-size:1rem;margin-bottom:2rem;">
+      Found <?php echo count($websites); ?> result(s)
+    </p>
+    <a href="index.php" style="display:inline-flex;align-items:center;gap:0.5rem;color:var(--accent);text-decoration:none;font-weight:500;">
+      <i class="fas fa-arrow-left"></i> Clear search and view all websites
+    </a>
+  </section>
+  <?php endif; ?>
+
+  <?php if (empty($search_query)): ?>
   <!-- HERO -->
   <section class="hero">
     <div class="hero-inner">
       <div class="hero-eyebrow">Premium websites, fast</div>
       <h1>Your next site,<br><em>already built.</em></h1>
       <p class="hero-sub">Browse, customize, and launch a professionally designed website in days — not months. No agency retainer. No guesswork.</p>
+      
+      <!-- Search Bar -->
+      <form action="index.php" method="GET" class="search-container" style="max-width:600px;margin:2rem auto;">
+        <div style="display:flex;gap:0.5rem;">
+          <input 
+            type="text" 
+            name="search" 
+            value="<?php echo htmlspecialchars($search_query); ?>" 
+            placeholder="Search by title, technology, category, or features..." 
+            style="flex:1;padding:1rem 1.5rem;border:1px solid var(--border);border-radius:100px;font-size:1rem;font-family:'Inter',sans-serif;outline:none;transition:border-color 0.2s;"
+          >
+          <button type="submit" style="padding:1rem 2rem;background:var(--black);color:var(--white);border:none;border-radius:100px;font-weight:500;cursor:pointer;transition:background 0.2s;">
+            <i class="fas fa-search"></i>
+          </button>
+        </div>
+        <?php if (!empty($search_query)): ?>
+          <div style="margin-top:0.75rem;text-align:center;">
+            <a href="index.php" style="color:var(--grey);text-decoration:none;font-size:0.9rem;">Clear search</a>
+          </div>
+        <?php endif; ?>
+      </form>
+      
       <div class="hero-actions">
-        <a href="#packages" class="btn-primary">Browse websites →</a>
+        <a href="browse.php" class="btn-primary">Browse websites →</a>
         <a href="about.php" class="btn-ghost">Learn more</a>
       </div>
     </div>
-
-    <!-- MARQUEE of site cards -->
-    <div class="marquee-section">
-      <div class="marquee-track" id="marqueeTrack">
-        <?php if (!empty($websites)): ?>
-          <?php foreach ($websites as $website): ?>
-            <?php for($i = 0; $i < 2; $i++): ?>
-              <div class="site-card">
-                <div class="site-card-bar">
-                  <span class="dot dot-r"></span>
-                  <span class="dot dot-y"></span>
-                  <span class="dot dot-g"></span>
-                </div>
-                <div class="site-card-body" style="padding:0;overflow:hidden;">
-                  <img src="<?php echo htmlspecialchars($website['image_url']); ?>" alt="<?php echo htmlspecialchars($website['title']); ?>" style="width:100%;height:100%;object-fit:cover;">
-                </div>
-              </div>
-            <?php endfor; ?>
-          <?php endforeach; ?>
-        <?php else: ?>
-          <!-- Fallback static cards if no websites -->
-          <div class="site-card">
-            <div class="site-card-bar">
-              <span class="dot dot-r"></span>
-              <span class="dot dot-y"></span>
-              <span class="dot dot-g"></span>
-            </div>
-            <div class="site-card-body" style="background:#F0F4FF;">
-              <div class="s-line dark" style="width:55%; background:#1A3BFF; opacity:0.7;"></div>
-              <div class="s-line" style="width:80%"></div>
-              <div class="s-line" style="width:65%"></div>
-              <div class="s-block" style="background:#1A3BFF; opacity:0.12; border-radius:6px;"></div>
-            </div>
-          </div>
-          <div class="site-card">
-            <div class="site-card-bar">
-              <span class="dot dot-r"></span>
-              <span class="dot dot-y"></span>
-              <span class="dot dot-g"></span>
-            </div>
-            <div class="site-card-body" style="background:#FFF5F0;">
-              <div class="s-line dark" style="width:55%; background:#FF5722; opacity:0.7;"></div>
-              <div class="s-line" style="width:80%"></div>
-              <div class="s-line" style="width:65%"></div>
-              <div class="s-block" style="background:#FF5722; opacity:0.12; border-radius:6px;"></div>
-            </div>
-          </div>
-          <div class="site-card">
-            <div class="site-card-bar">
-              <span class="dot dot-r"></span>
-              <span class="dot dot-y"></span>
-              <span class="dot dot-g"></span>
-            </div>
-            <div class="site-card-body" style="background:#F0FFF4;">
-              <div class="s-line dark" style="width:55%; background:#22C55E; opacity:0.7;"></div>
-              <div class="s-line" style="width:80%"></div>
-              <div class="s-line" style="width:65%"></div>
-              <div class="s-block" style="background:#22C55E; opacity:0.12; border-radius:6px;"></div>
-            </div>
-          </div>
-          <div class="site-card">
-            <div class="site-card-bar">
-              <span class="dot dot-r"></span>
-              <span class="dot dot-y"></span>
-              <span class="dot dot-g"></span>
-            </div>
-            <div class="site-card-body" style="background:#FFFBF0;">
-              <div class="s-line dark" style="width:55%; background:#F59E0B; opacity:0.7;"></div>
-              <div class="s-line" style="width:80%"></div>
-              <div class="s-line" style="width:65%"></div>
-              <div class="s-block" style="background:#F59E0B; opacity:0.12; border-radius:6px;"></div>
-            </div>
-          </div>
-        <?php endif; ?>
-      </div>
-    </div>
   </section>
-
-  <!-- STATS -->
-  <div class="stats-section">
-    <div class="stats-grid">
-      <div class="reveal">
-        <div class="stat-num">600<span>+</span></div>
-        <div class="stat-label">Sites launched</div>
-      </div>
-      <div class="reveal">
-        <div class="stat-num">4.9<span>★</span></div>
-        <div class="stat-label">Average rating</div>
-      </div>
-      <div class="reveal">
-        <div class="stat-num">72<span>h</span></div>
-        <div class="stat-label">Average delivery time</div>
-      </div>
-      <div class="reveal">
-        <div class="stat-num">98<span>%</span></div>
-        <div class="stat-label">Client satisfaction</div>
-      </div>
-    </div>
-  </div>
 
   <!-- HOW IT WORKS -->
   <section class="how-section" id="how">
@@ -998,21 +995,32 @@ $pageTitle = $seo_title . " - " . $site_name;
       </div>
     </div>
   </section>
+  <?php endif; ?>
 
   <!-- WEBSITES GRID -->
   <section class="packages-section" id="packages">
+    <?php if (empty($search_query)): ?>
     <div class="packages-header">
       <div>
-        <div class="section-eyebrow">Our Collection</div>
+        <div class="section-eyebrow">Featured Websites</div>
         <h2>Premium Websites<br>Ready to Launch</h2>
       </div>
       <p style="max-width:36ch; color: var(--grey); font-size:0.9rem; line-height:1.7;">Professionally designed websites ready for your business. Instant delivery, secure payments, and anonymous checkout available.</p>
     </div>
+    <?php endif; ?>
 
     <?php if (empty($websites)): ?>
-      <div class="text-center py-16 bg-white border border-gray-200 rounded-lg" style="background:var(--white);border:1px solid var(--border);border-radius:20px;padding:4rem;text-align:center;">
-        <p style="color:var(--grey);">No websites available at the moment.</p>
-      </div>
+      <?php if (!empty($search_query)): ?>
+        <div class="text-center py-16 bg-white border border-gray-200 rounded-lg" style="background:var(--white);border:1px solid var(--border);border-radius:20px;padding:4rem;text-align:center;">
+          <i class="fas fa-search" style="font-size:3rem;color:var(--grey);margin-bottom:1rem;"></i>
+          <p style="color:var(--grey);margin-bottom:1rem;">No websites found matching "<?php echo htmlspecialchars($search_query); ?>"</p>
+          <a href="index.php" style="color:var(--accent);text-decoration:none;font-weight:500;">Clear search and view all websites</a>
+        </div>
+      <?php else: ?>
+        <div class="text-center py-16 bg-white border border-gray-200 rounded-lg" style="background:var(--white);border:1px solid var(--border);border-radius:20px;padding:4rem;text-align:center;">
+          <p style="color:var(--grey);">No websites available at the moment.</p>
+        </div>
+      <?php endif; ?>
     <?php else: ?>
       <div class="packages-grid">
         <?php foreach ($websites as $website): ?>
@@ -1025,26 +1033,26 @@ $pageTitle = $seo_title . " - " . $site_name;
             </div>
             <div style="padding:2.5rem;display:flex;flex-direction:column;gap:2rem;">
               <div>
-                <div style="font-size:0.8rem;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--grey);margin-bottom:0.5rem;">
+                <div style="font-size:0.7rem;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--grey);margin-bottom:0.75rem;">
                   <?php echo htmlspecialchars($website['category']); ?>
                 </div>
-                <div style="font-family:'Fraunces',serif;font-size:1.5rem;font-weight:700;letter-spacing:-0.025em;line-height:1.1;color:var(--black);margin-bottom:0.5rem;">
+                <div style="font-family:'Fraunces',serif;font-size:1.75rem;font-weight:700;letter-spacing:-0.025em;line-height:1.1;color:var(--black);margin-bottom:0.75rem;">
                   <?php echo htmlspecialchars($website['title']); ?>
                 </div>
                 <div style="font-size:0.9rem;color:var(--grey);line-height:1.6;">
                   <?php echo htmlspecialchars($website['description']); ?>
                 </div>
               </div>
-              <div style="font-family:'Fraunces',serif;font-size:2rem;font-weight:700;letter-spacing:-0.04em;line-height:1;">
+              <div style="font-family:'Fraunces',serif;font-size:2.5rem;font-weight:700;letter-spacing:-0.04em;line-height:1;">
                 $<?php echo number_format($website['price'], 2); ?>
               </div>
               <div style="display:flex;gap:1rem;">
-                <a href="website.php?id=<?php echo $website['id']; ?>" style="flex:1;text-align:center;padding:0.85rem;border-radius:100px;font-size:0.9rem;font-weight:600;text-decoration:none;background:var(--light);color:var(--black);border:1px solid var(--border);transition:background 0.2s,color 0.2s,transform 0.15s;">
+                <a href="website.php?id=<?php echo $website['id']; ?>" style="flex:1;text-align:center;padding:1rem 1.5rem;border-radius:100px;font-size:0.95rem;font-weight:600;text-decoration:none;background:var(--light);color:var(--black);border:1px solid var(--border);transition:background 0.2s,color 0.2s,transform 0.15s;">
                   View
                 </a>
                 <form action="add_to_cart.php" method="POST" style="flex:1;">
                   <input type="hidden" name="website_id" value="<?php echo $website['id']; ?>">
-                  <button type="submit" style="width:100%;background:var(--accent);color:white;padding:0.85rem;border-radius:100px;font-size:0.9rem;font-weight:600;text-decoration:none;border:none;cursor:pointer;transition:background 0.2s,transform 0.15s;">
+                  <button type="submit" style="width:100%;background:var(--accent);color:white;padding:1rem 1.5rem;border-radius:100px;font-size:0.95rem;font-weight:600;text-decoration:none;border:none;cursor:pointer;transition:background 0.2s,transform 0.15s;">
                     Add to Cart
                   </button>
                 </form>
@@ -1155,7 +1163,7 @@ $pageTitle = $seo_title . " - " . $site_name;
       <div class="section-eyebrow" style="color:rgba(255,255,255,0.4)">Get started today</div>
       <h2>Your best website is<br><em>ready to launch.</em></h2>
       <p class="cta-sub">Browse our collection of premium websites and find the perfect match for your business.</p>
-      <a href="#packages" class="btn-primary" style="display:inline-flex;">Browse websites →</a>
+      <a href="/browse.php" class="btn-primary" style="display:inline-flex;">Browse websites →</a>
     </div>
   </section>
 

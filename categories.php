@@ -11,12 +11,13 @@ if ($maintenance_mode === '1' && !isset($_SESSION['admin_logged_in'])) {
     exit;
 }
 
+// Get settings from database
 $site_name = getSetting('site_name', 'WebStore');
 $seo_title = getSetting('seo_title', 'Premium Websites for Sale');
 $seo_description = getSetting('seo_description', 'Buy premium websites and templates for your business');
 $seo_keywords = getSetting('seo_keywords', 'websites, templates, premium, business');
 
-$pageTitle = "About - " . $site_name;
+$pageTitle = "Categories - " . $site_name;
 ?>
 
 <!DOCTYPE html>
@@ -47,8 +48,8 @@ $pageTitle = "About - " . $site_name;
 
     body {
       font-family: 'Inter', sans-serif;
-      background: var(--white);
       color: var(--black);
+      background: var(--white);
       line-height: 1.6;
     }
 
@@ -59,43 +60,39 @@ $pageTitle = "About - " . $site_name;
       left: 0;
       right: 0;
       z-index: 1000;
-      background: rgba(255,255,255,0.95);
+      background: rgba(255, 255, 255, 0.95);
       backdrop-filter: blur(10px);
       border-bottom: 1px solid var(--border);
-      padding: 1.25rem 2rem;
+      padding: 1rem 2rem;
       display: flex;
-      align-items: center;
       justify-content: space-between;
+      align-items: center;
     }
 
     .nav-logo {
       font-family: 'Fraunces', serif;
-      font-size: 1.5rem;
-      font-weight: 700;
-      letter-spacing: -0.03em;
+      font-size: 1.25rem;
+      font-weight: 600;
       color: var(--black);
       text-decoration: none;
     }
 
     .nav-links {
       display: flex;
-      align-items: center;
       gap: 2rem;
+      align-items: center;
       list-style: none;
     }
 
     .nav-links a {
-      font-size: 0.9rem;
+      font-size: 0.875rem;
       font-weight: 500;
       color: var(--grey);
       text-decoration: none;
       transition: color 0.2s;
-      position: relative;
     }
 
-    .nav-links a:hover {
-      color: var(--black);
-    }
+    .nav-links a:hover { color: var(--black); }
 
     .nav-search {
       position: relative;
@@ -175,9 +172,8 @@ $pageTitle = "About - " . $site_name;
       }
 
       nav.menu-open {
-        background: transparent;
+        background: var(--white);
         border-bottom: none;
-        backdrop-filter: none;
       }
 
       .nav-hamburger {
@@ -185,143 +181,126 @@ $pageTitle = "About - " . $site_name;
       }
     }
 
-    /* HERO */
-    .hero {
+    /* PAGE HEADER */
+    .page-header {
       padding: 8rem 2rem 4rem;
-      background: var(--light);
       text-align: center;
+      background: var(--light);
     }
 
-    .hero h1 {
+    .page-header h1 {
       font-family: 'Fraunces', serif;
-      font-size: clamp(2.5rem, 6vw, 4rem);
+      font-size: 2.5rem;
       font-weight: 700;
       letter-spacing: -0.03em;
       line-height: 1.1;
-      margin-bottom: 1.5rem;
-    }
-
-    .hero p {
-      font-size: 1.1rem;
-      color: var(--grey);
-      max-width: 600px;
-      margin: 0 auto 2rem;
-    }
-
-    /* CONTENT */
-    .content {
-      max-width: 800px;
-      margin: 0 auto;
-      padding: 4rem 2rem;
-    }
-
-    .section {
-      margin-bottom: 4rem;
-    }
-
-    .section h2 {
-      font-family: 'Fraunces', serif;
-      font-size: 2rem;
-      font-weight: 700;
-      letter-spacing: -0.025em;
-      margin-bottom: 1.5rem;
-    }
-
-    .section p {
-      color: var(--grey);
-      line-height: 1.8;
+      color: var(--black);
       margin-bottom: 1rem;
     }
 
-    .features {
+    .page-header p {
+      color: var(--grey);
+      font-size: 1rem;
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    /* CATEGORIES SECTION */
+    .categories-section {
+      padding: 4rem 2rem;
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    .categories-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
       gap: 2rem;
-      margin-top: 2rem;
     }
 
-    .feature {
-      padding: 1.5rem;
-      background: var(--light);
-      border-radius: 12px;
+    .category-card {
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 2rem;
+      text-align: center;
+      transition: transform 0.2s, box-shadow 0.2s;
+      text-decoration: none;
+      color: var(--black);
     }
 
-    .feature h3 {
+    .category-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 12px 24px rgba(0, 0, 0, 0.08);
+    }
+
+    .category-icon {
+      font-size: 2.5rem;
+      color: var(--accent);
+      margin-bottom: 1.5rem;
+    }
+
+    .category-card h3 {
+      font-family: 'Fraunces', serif;
+      font-size: 1.25rem;
       font-weight: 600;
       margin-bottom: 0.5rem;
     }
 
-    .feature p {
-      font-size: 0.9rem;
+    .category-card p {
       color: var(--grey);
-    }
-
-    .cta-box {
-      background: var(--black);
-      color: var(--white);
-      padding: 3rem;
-      border-radius: 16px;
-      text-align: center;
-      margin-top: 3rem;
-    }
-
-    .cta-box h3 {
-      font-family: 'Fraunces', serif;
-      font-size: 1.75rem;
-      margin-bottom: 1rem;
-    }
-
-    .cta-box a {
-      display: inline-block;
-      background: var(--white);
-      color: var(--black);
-      padding: 0.85rem 2rem;
-      border-radius: 100px;
-      text-decoration: none;
-      font-weight: 600;
-      margin-top: 1.5rem;
+      font-size: 0.9rem;
     }
 
     /* FOOTER */
     footer {
       background: var(--black);
       color: var(--white);
-      padding: 3rem 2rem;
-      text-align: center;
+      padding: 4rem 2rem;
+      margin-top: 4rem;
     }
 
-    .footer-logo {
+    .footer-content {
+      max-width: 1400px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 3rem;
+    }
+
+    .footer-col h4 {
       font-family: 'Fraunces', serif;
-      font-size: 1.25rem;
-      color: var(--white);
-      text-decoration: none;
-      display: block;
-      margin-bottom: 1.5rem;
+      font-size: 1rem;
+      font-weight: 600;
+      margin-bottom: 1rem;
     }
 
-    .footer-links {
-      display: flex;
-      justify-content: center;
-      gap: 2rem;
+    .footer-col ul {
       list-style: none;
-      margin-bottom: 1.5rem;
-      flex-wrap: wrap;
     }
 
-    .footer-links a {
+    .footer-col ul li {
+      margin-bottom: 0.5rem;
+    }
+
+    .footer-col ul li a {
       color: var(--grey);
       text-decoration: none;
-      font-size: 0.9rem;
       transition: color 0.2s;
     }
 
-    .footer-links a:hover {
+    .footer-col ul li a:hover {
       color: var(--white);
     }
 
-    .footer-copy {
+    .footer-bottom {
+      max-width: 1400px;
+      margin: 3rem auto 0;
+      padding-top: 2rem;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+      text-align: center;
       color: var(--grey);
-      font-size: 0.85rem;
+      font-size: 0.875rem;
     }
   </style>
 </head>
@@ -359,92 +338,96 @@ $pageTitle = "About - " . $site_name;
     </button>
   </nav>
 
-  <!-- HERO -->
-  <section class="hero">
-    <h1>About Us</h1>
-    <p><?php echo htmlspecialchars($site_name); ?> is dedicated to providing high-quality digital products and services to our customers.</p>
-  </section>
-
-  <!-- CONTENT -->
-  <div class="content">
-    <div class="section">
-      <h2>Our Mission</h2>
-      <p>We believe in making premium digital assets accessible to everyone, with a focus on quality, security, and customer satisfaction. Every website in our collection is carefully crafted to help businesses establish a strong online presence quickly and affordably.</p>
-    </div>
-
-    <div class="section">
-      <h2>What We Offer</h2>
-      <div class="features">
-        <div class="feature">
-          <h3>Premium Websites</h3>
-          <p>High-quality, professionally designed websites ready for immediate use.</p>
-        </div>
-        <div class="feature">
-          <h3>Secure Payments</h3>
-          <p>Multiple payment options including cryptocurrency with bank-level security.</p>
-        </div>
-        <div class="feature">
-          <h3>Instant Delivery</h3>
-          <p>Get your purchases immediately after payment verification.</p>
-        </div>
-        <div class="feature">
-          <h3>24/7 Support</h3>
-          <p>Our team is always ready to help you with any questions.</p>
-        </div>
-      </div>
-    </div>
-
-    <div class="section">
-      <h2>Our Story</h2>
-      <p>Founded with a passion for digital excellence, <?php echo htmlspecialchars($site_name); ?> has grown from a small idea to a trusted platform for digital products. We understand the importance of having the right tools and resources to succeed in the digital world, and we're committed to providing exactly that.</p>
-    </div>
-
-    <div class="section">
-      <h2>Why Choose Us?</h2>
-      <ul style="color:var(--grey);line-height:1.8;">
-        <li>Curated selection of premium digital products</li>
-        <li>Competitive pricing without compromising quality</li>
-        <li>Secure and anonymous checkout options</li>
-        <li>Regular updates and improvements to our products</li>
-        <li>Dedicated customer support team</li>
-      </ul>
-    </div>
-
-    <div class="cta-box">
-      <h3>Get in Touch</h3>
-      <p>Have questions or want to learn more? We'd love to hear from you!</p>
-      <a href="contact.php">Contact Us →</a>
-    </div>
+  <!-- PAGE HEADER -->
+  <div class="page-header">
+    <h1>Browse by Category</h1>
+    <p>Find the perfect website for your specific industry or use case</p>
   </div>
+
+  <!-- CATEGORIES GRID -->
+  <section class="categories-section">
+    <div class="categories-grid">
+      <a href="browse.php?category=E-commerce" class="category-card">
+        <div class="category-icon"><i class="fas fa-shopping-cart"></i></div>
+        <h3>E-commerce</h3>
+        <p>Online stores and retail websites</p>
+      </a>
+      <a href="browse.php?category=Business" class="category-card">
+        <div class="category-icon"><i class="fas fa-briefcase"></i></div>
+        <h3>Business</h3>
+        <p>Corporate and professional sites</p>
+      </a>
+      <a href="browse.php?category=Portfolio" class="category-card">
+        <div class="category-icon"><i class="fas fa-images"></i></div>
+        <h3>Portfolio</h3>
+        <p>Showcase and creative websites</p>
+      </a>
+      <a href="browse.php?category=Blog" class="category-card">
+        <div class="category-icon"><i class="fas fa-rss"></i></div>
+        <h3>Blog</h3>
+        <p>Content and publishing platforms</p>
+      </a>
+      <a href="browse.php?category=Education" class="category-card">
+        <div class="category-icon"><i class="fas fa-graduation-cap"></i></div>
+        <h3>Education</h3>
+        <p>E-learning and academic sites</p>
+      </a>
+      <a href="browse.php?category=Health" class="category-card">
+        <div class="category-icon"><i class="fas fa-heartbeat"></i></div>
+        <h3>Health</h3>
+        <p>Medical and wellness websites</p>
+      </a>
+      <a href="browse.php?category=Technology" class="category-card">
+        <div class="category-icon"><i class="fas fa-code"></i></div>
+        <h3>Technology</h3>
+        <p>Tech and startup websites</p>
+      </a>
+      <a href="browse.php?category=Real Estate" class="category-card">
+        <div class="category-icon"><i class="fas fa-home"></i></div>
+        <h3>Real Estate</h3>
+        <p>Property and rental websites</p>
+      </a>
+    </div>
+  </section>
 
   <!-- FOOTER -->
   <footer>
-    <a href="index.php" class="footer-logo"><?php echo htmlspecialchars($site_name); ?></a>
-    <ul class="footer-links">
-      <li><a href="index.php">Home</a></li>
-      <li><a href="about.php">About</a></li>
-      <li><a href="blog.php">Blog</a></li>
-      <li><a href="contact.php">Contact</a></li>
-      <li><a href="cart.php">Cart</a></li>
-      <li><a href="privacy.php">Privacy Policy</a></li>
-      <li><a href="terms.php">Terms of Use</a></li>
-    </ul>
-    <span class="footer-copy">© <?php echo date('Y'); ?> <?php echo htmlspecialchars($site_name); ?>. All rights reserved.</span>
+    <div class="footer-content">
+      <div class="footer-col">
+        <h4><?php echo htmlspecialchars($site_name); ?></h4>
+        <p style="color:var(--grey);font-size:0.9rem;">Premium websites for your business.</p>
+      </div>
+      <div class="footer-col">
+        <h4>Quick Links</h4>
+        <ul>
+          <li><a href="index.php">Home</a></li>
+          <li><a href="browse.php">Browse</a></li>
+          <li><a href="categories.php">Categories</a></li>
+          <li><a href="contact.php">Contact</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <ul>
+          <li><a href="privacy.php">Privacy Policy</a></li>
+          <li><a href="terms.php">Terms of Service</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      &copy; <?php echo date('Y'); ?> <?php echo htmlspecialchars($site_name); ?>. All rights reserved.
+    </div>
   </footer>
 
   <script>
+    // Mobile menu toggle
     const hamburger = document.getElementById('hamburger');
     const navLinks = document.getElementById('navLinks');
     const nav = document.querySelector('nav');
+
     hamburger.addEventListener('click', () => {
       navLinks.classList.toggle('open');
       nav.classList.toggle('menu-open');
-    });
-    navLinks.querySelectorAll('a').forEach(a => {
-      a.addEventListener('click', () => {
-        navLinks.classList.remove('open');
-        nav.classList.remove('menu-open');
-      });
     });
   </script>
 </body>

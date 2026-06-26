@@ -124,6 +124,7 @@ $pageTitle = "Payment Instructions - " . $site_name;
       color: var(--grey);
       text-decoration: none;
       transition: color 0.2s;
+      position: relative;
     }
 
     .nav-links a:hover {
@@ -175,6 +176,12 @@ $pageTitle = "Payment Instructions - " . $site_name;
 
       .nav-links.open {
         transform: translateX(0);
+      }
+
+      nav.menu-open {
+        background: transparent;
+        border-bottom: none;
+        backdrop-filter: none;
       }
 
       .nav-hamburger {
@@ -583,8 +590,14 @@ $pageTitle = "Payment Instructions - " . $site_name;
       <li><a href="about.php">About</a></li>
       <li><a href="blog.php">Blog</a></li>
       <li><a href="contact.php">Contact</a></li>
-      <li><a href="cart.php" class="relative">
+      <li><a href="cart.php" class="relative" style="position:relative">
         <i class="fas fa-shopping-cart"></i>
+        <?php
+        $cart_count = getCartCount();
+        if ($cart_count > 0):
+        ?>
+          <span style="position:absolute;top:-6px;right:-8px;background:#EF4444;color:white;border-radius:50%;width:18px;height:18px;font-size:10px;display:flex;align-items:center;justify-content:center;z-index:1"><?php echo $cart_count; ?></span>
+        <?php endif; ?>
       </a></li>
       <li><a href="admin/login.php" class="nav-cta">Admin</a></li>
     </ul>
@@ -762,11 +775,16 @@ $pageTitle = "Payment Instructions - " . $site_name;
   <script>
     const hamburger = document.getElementById('hamburger');
     const navLinks = document.getElementById('navLinks');
+    const nav = document.querySelector('nav');
     hamburger.addEventListener('click', () => {
       navLinks.classList.toggle('open');
+      nav.classList.toggle('menu-open');
     });
     navLinks.querySelectorAll('a').forEach(a => {
-      a.addEventListener('click', () => navLinks.classList.remove('open'));
+      a.addEventListener('click', () => {
+        navLinks.classList.remove('open');
+        nav.classList.remove('menu-open');
+      });
     });
 
     function copyToClipboard(button) {

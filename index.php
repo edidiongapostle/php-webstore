@@ -847,13 +847,13 @@ $pageTitle = $seo_title . " - " . $site_name;
       <li><a href="about.php">About</a></li>
       <li><a href="blog.php">Blog</a></li>
       <li><a href="contact.php">Contact</a></li>
-      <li><a href="cart.php" class="relative">
+      <li><a href="cart.php" class="relative" style="position:relative">
         <i class="fas fa-shopping-cart"></i>
         <?php
         $cart_count = getCartCount();
         if ($cart_count > 0):
         ?>
-          <span class="absolute -top-1 -right-1 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs" style="position:absolute;top:-4px;right:-8px;background:#EF4444;color:white;border-radius:50%;width:18px;height:18px;font-size:10px;display:flex;align-items:center;justify-content:center;"><?php echo $cart_count; ?></span>
+          <span class="absolute -top-1 -right-1 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs" style="position:absolute;top:-6px;right:-8px;background:#EF4444;color:white;border-radius:50%;width:18px;height:18px;font-size:10px;display:flex;align-items:center;justify-content:center;z-index:1"><?php echo $cart_count; ?></span>
         <?php endif; ?>
       </a></li>
       <li><a href="admin/login.php" class="nav-cta">Admin</a></li>

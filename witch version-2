@@ -1,0 +1,18 @@
+*   [33m07ecd47[m[33m ([m[1;35mrefs/stash[m[33m)[m WIP on main: 3643f18 v2
+[31m|[m[32m\[m  
+[31m|[m * [33m9e3eb7e[m index on main: 3643f18 v2
+[31m|[m[31m/[m  
+* [33m3643f18[m[33m ([m[1;32mmain[m[33m)[m v2
+[32m|[m * [33m9153f61[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mversion-2[m[33m, [m[1;31morigin/version-2[m[33m)[m updated and added documentation page
+[32m|[m[32m/[m  
+* [33m5c41587[m[33m ([m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m Fixed cart count icon
+* [33m855a58d[m updated website theme
+* [33m3a9dbcc[m update
+* [33m2123c57[m update
+* [33m1980169[m about page
+* [33m19de2ff[m added blog page
+* [33m336b939[m updated token validation
+* [33m329e813[m Added a protected download folder for dynamic downloads
+* [33mc37526f[m Added a protected download folder for dynamic downloads
+* [33m95e18f1[m Added email templates for customer delivery
+* [33md736529[m Updated payment flow

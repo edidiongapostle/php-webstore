@@ -320,8 +320,10 @@ $pageTitle = "Terms of Use - " . $site_name;
   <nav>
     <a href="index.php" class="nav-logo"><?php echo htmlspecialchars($site_name); ?></a>
     <ul class="nav-links" id="navLinks">
-      <li><a href="index.php">Home</a></li>
-      <li><a href="about.php">About</a></li>
+      <li><a href="browse.php">Browse</a></li>
+      <li><a href="categories.php">Categories</a></li>
+      <li><a href="pricing.php">Pricing</a></li>
+      <li><a href="documentation.php">Documentation</a></li>
       <li><a href="blog.php">Blog</a></li>
       <li><a href="contact.php">Contact</a></li>
       <li><a href="cart.php" class="relative" style="position:relative">

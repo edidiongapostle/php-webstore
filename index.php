@@ -102,6 +102,35 @@ $pageTitle = $seo_title . " - " . $site_name;
 
     .nav-links a:hover { color: var(--black); }
 
+    .nav-search {
+      position: relative;
+    }
+
+    .nav-search input {
+      padding: 0.5rem 1rem 0.5rem 2.5rem;
+      border: 1px solid var(--border);
+      border-radius: 100px;
+      font-size: 0.85rem;
+      font-family: 'Inter', sans-serif;
+      width: 200px;
+      outline: none;
+      transition: border-color 0.2s, width 0.2s;
+    }
+
+    .nav-search input:focus {
+      border-color: var(--accent);
+      width: 250px;
+    }
+
+    .nav-search i {
+      position: absolute;
+      left: 0.85rem;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--grey);
+      font-size: 0.85rem;
+    }
+
     .nav-cta {
       background: var(--black);
       color: var(--white) !important;
@@ -437,7 +466,7 @@ $pageTitle = $seo_title . " - " . $site_name;
     .packages-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-      gap: 1.5rem;
+      gap: 1rem;
     }
 
     .pkg-card {
@@ -589,7 +618,7 @@ $pageTitle = $seo_title . " - " . $site_name;
     .testimonials-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-      gap: 1.5rem;
+      gap: 1rem;
     }
 
     .testimonial-card {
@@ -798,6 +827,8 @@ $pageTitle = $seo_title . " - " . $site_name;
         gap: 1.25rem;
       }
 
+      .how-section { display: none; }
+
       .how-steps {
         grid-template-columns: 1fr;
         border-radius: 16px;
@@ -812,6 +843,14 @@ $pageTitle = $seo_title . " - " . $site_name;
 
       section { padding: 5rem 5vw; }
       .stats-section { padding: 4rem 5vw; }
+
+      .stats-grid { gap: 2rem; }
+      .stat-num { font-size: clamp(2.2rem, 5vw, 3.6rem); }
+      .stat-label { font-size: 0.75rem; }
+
+      .cta-section { padding: 3rem 5vw; }
+      .cta-section h2 { font-size: 1.75rem; max-width: 20ch; }
+      .cta-sub { font-size: 0.85rem; margin: 0 auto 2rem; }
     }
 
     @media (max-width: 480px) {
@@ -1073,17 +1112,6 @@ $pageTitle = $seo_title . " - " . $site_name;
           <div>
             <div class="author-name">Amara Mensah</div>
             <div class="author-role">Founder, Bloom Studio</div>
-          </div>
-        </div>
-      </div>
-      <div class="testimonial-card reveal">
-        <div class="stars">★★★★★</div>
-        <p class="testimonial-text">"The e-commerce template I purchased saved me months of development. Clean code, great documentation, and the support team helped me with a few customizations."</p>
-        <div class="testimonial-author">
-          <div class="author-avatar" style="background:#0D0D0D;">JK</div>
-          <div>
-            <div class="author-name">Jonas Keller</div>
-            <div class="author-role">CEO, Pinepoint Consulting</div>
           </div>
         </div>
       </div>

@@ -112,17 +112,20 @@ $pageTitle = "About - " . $site_name;
     .nav-hamburger {
       display: none;
       flex-direction: column;
-      gap: 0.35rem;
+      gap: 5px;
+      cursor: pointer;
       background: none;
       border: none;
-      cursor: pointer;
+      padding: 4px;
     }
 
     .nav-hamburger span {
-      width: 24px;
+      display: block;
+      width: 22px;
       height: 2px;
       background: var(--black);
-      transition: 0.2s;
+      border-radius: 2px;
+      transition: all 0.3s;
     }
 
     @media (max-width: 768px) {

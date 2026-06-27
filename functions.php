@@ -46,6 +46,20 @@ function getAllWebsites() {
     return $stmt->fetchAll();
 }
 
+function searchWebsites($search_query) {
+    global $conn;
+    
+    if (empty($search_query)) {
+        return getAllWebsites();
+    }
+    
+    $search_term = '%' . $search_query . '%';
+    $sql = "SELECT * FROM websites WHERE status = 'active' AND (title LIKE ? OR description LIKE ? OR category LIKE ? OR technologies LIKE ?) ORDER BY featured DESC, created_at DESC";
+    $stmt = $conn->prepare($sql);
+    $stmt->execute([$search_term, $search_term, $search_term, $search_term]);
+    return $stmt->fetchAll();
+}
+
 function getWebsiteById($id) {
     global $conn;
     $stmt = $conn->prepare("SELECT * FROM websites WHERE id = ? AND status = 'active'");

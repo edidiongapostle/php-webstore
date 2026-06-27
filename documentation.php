@@ -56,31 +56,32 @@ $pageTitle = "Documentation - " . $site_name;
     /* NAV */
     nav {
       position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      z-index: 1000;
-      background: rgba(255, 255, 255, 0.95);
-      backdrop-filter: blur(10px);
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      background: rgba(255,255,255,0.92);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
       border-bottom: 1px solid var(--border);
-      padding: 1rem 2rem;
       display: flex;
-      justify-content: space-between;
       align-items: center;
+      justify-content: space-between;
+      padding: 0 5vw;
+      height: 64px;
     }
 
     .nav-logo {
       font-family: 'Fraunces', serif;
       font-size: 1.25rem;
-      font-weight: 600;
+      font-weight: 700;
       color: var(--black);
       text-decoration: none;
+      letter-spacing: -0.02em;
     }
 
     .nav-links {
       display: flex;
-      gap: 2rem;
       align-items: center;
+      gap: 2.5rem;
       list-style: none;
     }
 
@@ -127,13 +128,17 @@ $pageTitle = "Documentation - " . $site_name;
     .nav-cta {
       background: var(--black);
       color: var(--white) !important;
-      padding: 0.6rem 1.2rem;
+      padding: 0.55rem 1.25rem;
       border-radius: 100px;
-      transition: background 0.2s;
+      font-size: 0.875rem !important;
+      font-weight: 500 !important;
+      transition: background 0.2s, transform 0.15s !important;
     }
 
     .nav-cta:hover {
-      background: #1a1a1a;
+      background: var(--accent) !important;
+      color: var(--white) !important;
+      transform: translateY(-1px);
     }
 
     .nav-hamburger {
@@ -156,27 +161,18 @@ $pageTitle = "Documentation - " . $site_name;
     }
 
     @media (max-width: 768px) {
-      .nav-links {
-        position: fixed;
-        top: 70px;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        flex-direction: column;
-        background: var(--white);
-        padding: 2rem;
-        gap: 1.5rem;
-        transform: translateX(100%);
-        transition: transform 0.3s ease;
-      }
+      .nav-links { display: none; }
+      .nav-hamburger { display: flex; }
 
       .nav-links.open {
-        transform: translateX(0);
-      }
-
-      nav.menu-open {
+        display: flex;
+        flex-direction: column;
+        position: fixed;
+        top: 64px; left: 0; right: 0;
         background: var(--white);
-        border-bottom: none;
+        border-bottom: 1px solid var(--border);
+        padding: 1.5rem 5vw 2rem;
+        gap: 1.25rem;
       }
 
       .nav-hamburger {
@@ -462,11 +458,9 @@ $pageTitle = "Documentation - " . $site_name;
     // Mobile menu toggle
     const hamburger = document.getElementById('hamburger');
     const navLinks = document.getElementById('navLinks');
-    const nav = document.querySelector('nav');
 
     hamburger.addEventListener('click', () => {
       navLinks.classList.toggle('open');
-      nav.classList.toggle('menu-open');
     });
   </script>
 </body>

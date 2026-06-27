@@ -182,7 +182,7 @@ $pageTitle = "Payment Instructions - " . $site_name;
       }
 
       nav.menu-open {
-        background: transparent;
+        background: white;
         border-bottom: none;
         backdrop-filter: none;
       }

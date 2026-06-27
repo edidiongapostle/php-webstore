@@ -215,7 +215,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['confirm_payment'])) {
       }
 
       nav.menu-open {
-        background: transparent;
+        background: white;
         border-bottom: none;
         backdrop-filter: none;
       }

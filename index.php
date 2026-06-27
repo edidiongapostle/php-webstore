@@ -888,6 +888,12 @@ $pageTitle = $seo_title . " - " . $site_name;
       <li><a href="documentation.php">Documentation</a></li>
       <li><a href="blog.php">Blog</a></li>
       <li><a href="contact.php">Contact</a></li>
+      <li class="nav-search">
+        <form action="browse.php" method="GET">
+          <i class="fas fa-search"></i>
+          <input type="text" name="search" placeholder="Search...">
+        </form>
+      </li>
       <li><a href="cart.php" class="relative" style="position:relative">
         <i class="fas fa-shopping-cart"></i>
         <?php
